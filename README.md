@@ -100,13 +100,12 @@ Only one superuser will be created at the beginning  and he can change in the (a
 
 ### 3.3 Unauthenticated Visitor
 
-| Permission                                                                                       | Allowed |
-| ------------------------------------------------------------------------------------------------ | ------- |
-| View the map (read-only)                                                                         | ✅       |
-| Register                                                                                         | ✅       |
-| Login                                                                                            | ✅       |
-| Create posts / message users                                                                     | ❌       |
-| He can see posts of other people and the detailed information but cannot interact only read only | ✅       |
+| Permission                   | Allowed |
+| ---------------------------- | ------- |
+| View the map (read-only)     | ✅       |
+| Register                     | ✅       |
+| Login                        | ✅       |
+| Create posts / message users | ❌       |
 
 ---
 
@@ -118,14 +117,15 @@ Only one superuser will be created at the beginning  and he can change in the (a
 - A user can register with: **first name, last name, email, password, phone number (optional)**.
 - Email must be unique across the system.
 - Password must be hashed using **BCrypt** before storage.
+- Password and retype password are required when registering.
 - Upon successful registration, the system assigns ROLE_USER.
-- A welcome email may be sent (optional in Phase 1, required in Phase 2).
+- A welcome email may be sent (optional in Phase 1, required in Phase 2). We can use mailpit for testing at the begginng.
 
 #### FR-AUTH-02: User Login
 - Users log in with email + password.
 - On success, the server returns a **JWT access token** and a **refresh token**.
 - The access token is short-lived (e.g., 15 minutes). The refresh token is long-lived (e.g., 7 days).
-- The frontend stores the JWT in memory or a secure cookie (not localStorage for security).
+- The frontend stores the JWT in memory or a secure cookie (not localStorage for security). I want to use HTTP-only Cookies.
 
 #### FR-AUTH-03: Token Refresh
 - A dedicated endpoint (`POST /api/auth/refresh`) accepts the refresh token and issues a new access token without requiring re-login.
@@ -134,7 +134,7 @@ Only one superuser will be created at the beginning  and he can change in the (a
 - On logout, the refresh token is invalidated server-side (stored in DB or Redis with a revocation list).
 
 #### FR-AUTH-05: Password Reset (Phase 2)
-- User requests a password reset by email.
+- User requests a password reset by email. We can also use mailpit here for beggining.
 - A time-limited token is emailed.
 - User visits a reset link and sets a new password.
 
@@ -152,7 +152,7 @@ Only one superuser will be created at the beginning  and he can change in the (a
 
 #### FR-PROFILE-03: Profile Picture Upload
 - Users can upload a profile picture (JPEG or PNG, max 5 MB).
-- The image is stored on the server filesystem or in an object store (S3-compatible in Phase 2).
+- The image is stored on the server filesystem or in an object store (S3-compatible in Phase 2). For now we can store it in the database.
 - A default avatar is shown if no picture is uploaded.
 
 #### FR-PROFILE-04: Account Deactivation
@@ -210,19 +210,20 @@ Only one superuser will be created at the beginning  and he can change in the (a
 #### FR-POST-02: Create a Post
 A user can create a post with the following fields:
 
-| Field | Type | Required |
-|---|---|---|
-| Title | String (max 100 chars) | ✅ |
-| Description | Text (max 2000 chars) | ✅ |
-| Post Type | Enum (REQUEST / OFFER) | ✅ |
-| Category | Enum or free tag (e.g., Plumbing, Electronics) | ✅ |
-| Location | Lat/Lng + optional address label | ✅ |
-| Contact Info Override | Phone / Email (optional, if different from profile) | ❌ |
-| Photos | Up to 5 images | ❌ |
+| Field                 | Type                                                                                                          | Required |
+| --------------------- | ------------------------------------------------------------------------------------------------------------- | -------- |
+| Title                 | String (max 100 chars)                                                                                        | ✅        |
+| Description           | Text (max 2000 chars)                                                                                         | ✅        |
+| Post Type             | Enum (REQUEST / OFFER)                                                                                        | ✅        |
+| Category              | Free tag (e.g., Plumbing, Electronics)                                                                        | ✅        |
+| Location              | Lat/Lng + optional address label                                                                              | ✅        |
+| Contact Info Override | Phone / Email (optional, if different from profile). Checkbox if he wants to include email/phone in the post. | ❌        |
+| Photos                | Up to 5 images                                                                                                | ❌        |
 
 #### FR-POST-03: Edit Post
 - The post author can edit any field of their post as long as it is in status **REQUESTING** or **OFFERING**.
 - Once a service is **ACCEPTED**, editing is restricted (title/description only, no location change).
+- Also even if the requesting for help author didn't found help (nobody offered help trough the application) he can put the request status to CANCELED if the request is old, already solved by him or by person not on this application.
 
 #### FR-POST-04: Delete Post
 - The post author or an admin can delete a post.
@@ -242,7 +243,7 @@ The post detail page includes:
 #### FR-POST-06: Photo Upload on Post
 - Up to **5 photos** per post (JPEG/PNG, max 5 MB each).
 - Photos can be added at creation time or later (in edit mode).
-- Photos are displayed as a scrollable gallery on the detail page.
+- Photos are displayed as a scrollable gallery on the detail page. We can use carousel here if it will look good on phone devices.
 
 #### FR-POST-07: Contact Information on Post
 - Each post can optionally display the requester's **phone number** and/or **email**.
@@ -323,12 +324,12 @@ Each SERVICE_REQUEST post follows a defined lifecycle. SERVICE_OFFER posts have 
 
 **For SERVICE_REQUEST posts:**
 
-| Status | Description | Who Can Set It |
-|---|---|---|
-| `REQUESTING` | Post is live, visible on map, awaiting offers of help | System (on creation) |
-| `SERVICE_ACCEPTED` | A helper has been chosen, service is in progress | Requester (accepts an offer from a helper) |
-| `SERVICE_DONE` | Service is complete | Requester |
-| `CANCELLED` | Post was cancelled before completion | Requester or Admin |
+| Status             | Description                                           | Who Can Set It                             |
+| ------------------ | ----------------------------------------------------- | ------------------------------------------ |
+| `REQUESTING`       | Post is live, visible on map, awaiting offers of help | System (on creation)                       |
+| `SERVICE_ACCEPTED` | A helper has been chosen, service is in progress      | Requester (accepts an offer from a helper) |
+| `SERVICE_DONE`     | Service is complete                                   | Requester                                  |
+| `CANCELLED`        | Post was cancelled before completion                  | Requester or Admin                         |
 
 **For SERVICE_OFFER posts:**
 
@@ -353,7 +354,7 @@ Each SERVICE_REQUEST post follows a defined lifecycle. SERVICE_OFFER posts have 
 ```
 
 #### FR-STATUS-03: Accepting a Helper
-- A helper sends a message expressing interest (or clicks an "I can help" button on a REQUEST post).
+- A helper sends a message expressing interest (or clicks an "I can help" button on a REQUEST post). When he clicks send message automatically link from the currently opened request is sent with the first message in their conversation so they know about which request they talk about.
 - The requester sees a notification / indicator in the chat or on their post dashboard.
 - The requester clicks **"Accept this helper"** on the post detail page (this lists users who have messaged them).
 - The post status changes to `SERVICE_ACCEPTED`.
@@ -975,6 +976,7 @@ V10__insert_admin_user.sql
 ---
 
 *End of System Requirements Document — NeighborHelp v1.0.0*
+
 
 
 
