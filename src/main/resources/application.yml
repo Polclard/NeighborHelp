@@ -32,4 +32,4 @@ app:
     host: ${MAILPIT_SMTP_HOST:localhost}
     port: ${MAILPIT_SMTP_PORT:1025}
   routing:
-    openrouteservice-api-key: ${OPENROUTESERVICE_A
+    openrouteservice-api-key: ${OPENROUTESERVICE_API_KEY:replace-me}
