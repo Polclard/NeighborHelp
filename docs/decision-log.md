@@ -11,3 +11,13 @@
 - Decision: use `com.neighborhelp` as the base package and Maven groupId.
 - Reason: it matches the project name and is cleaner than `com.application`.
 - Consequence: all future Java packages should start from `com.neighborhelp`.
+
+### Configuration format
+- Decision: use YAML configuration files instead of `.properties`.
+- Reason: profile-based configuration is easier to read and maintain in YAML.
+- Consequence: environment-specific settings will live in `application-<profile>.yml`.
+
+### Current startup strategy
+- Decision: temporarily exclude datasource and JPA auto-configuration in `dev` and `test`.
+- Reason: PostgreSQL and Flyway are not configured yet, but the app must still compile, test, and boot cleanly.
+- Consequence: these exclusions must be removed once database infrastructure and datasource config are added.
