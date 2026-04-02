@@ -21,3 +21,13 @@
 - Decision: temporarily exclude datasource and JPA auto-configuration in `dev` and `test`.
 - Reason: PostgreSQL and Flyway are not configured yet, but the app must still compile, test, and boot cleanly.
 - Consequence: these exclusions must be removed once database infrastructure and datasource config are added.
+
+### Local development infrastructure
+- Decision: use Docker Compose for PostgreSQL and Mailpit in local development.
+- Reason: it gives a reproducible setup without requiring manual local installation.
+- Consequence: the `dev` profile now expects Docker-managed infrastructure to be available.
+
+### Local PostgreSQL port
+- Decision: use host port `5433` for the Docker PostgreSQL service in development.
+- Reason: this machine already has another PostgreSQL instance listening on `5432`, which causes the app to connect to the wrong server.
+- Consequence: local Docker-based development must use `localhost:5433` unless overridden explicitly.
