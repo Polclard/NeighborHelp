@@ -19,7 +19,7 @@ springdoc:
 
 app:
   jwt:
-    secret: ${JWT_SECRET:change-me}
+    secret: ${JWT_SECRET:change-me-change-me-change-me-change-me}
     access-token-expiration-minutes: ${JWT_ACCESS_TOKEN_EXPIRATION_MINUTES:15}
     refresh-token-expiration-days: ${JWT_REFRESH_TOKEN_EXPIRATION_DAYS:7}
   upload:
