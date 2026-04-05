@@ -1,5 +1,6 @@
-package com.neighborhelp.config;
+package com.neighborhelp.security;
 
+import com.neighborhelp.config.JwtProperties;
 import com.neighborhelp.model.Role;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
@@ -18,11 +19,11 @@ public class JwtService {
 
     private final JwtProperties jwtProperties;
 
-    public JwtService(JwtProperties jwtProperties){
+    public JwtService(JwtProperties jwtProperties) {
         this.jwtProperties = jwtProperties;
     }
 
-    public String generateAccessToken(UUID userId, String email, Role role){
+    public String generateAccessToken(UUID userId, String email, Role role) {
         Instant now = Instant.now();
         Instant expiresAt = now.plus(Duration.ofMinutes(jwtProperties.getAccessTokenExpirationMinutes()));
 
@@ -36,31 +37,31 @@ public class JwtService {
             .compact();
     }
 
-    public String extractMail(String token){
+    public String extractEmail(String token) {
         return extractClaims(token).getSubject();
     }
 
-    public UUID extractUserId(String token){
-        return UUID.fromString  (extractClaims(token).get("userId", String.class));
+    public UUID extractUserId(String token) {
+        return UUID.fromString(extractClaims(token).get("userId", String.class));
     }
 
     public Role extractRole(String token) {
         return Role.valueOf(extractClaims(token).get("role", String.class));
     }
 
-    public boolean isTokenExpired(String token){
+    public boolean isTokenExpired(String token) {
         return extractClaims(token).getExpiration().before(new Date());
     }
 
-    public boolean isTokenValid(String token, String expectedEmail){
-        return expectedEmail.equals(extractMail(token)) && !isTokenExpired(token);
+    public boolean isTokenValid(String token, String expectedEmail) {
+        return expectedEmail.equals(extractEmail(token)) && !isTokenExpired(token);
     }
 
-    public long getAccessTokenExpirationSeconds(){
+    public long getAccessTokenExpirationSeconds() {
         return Duration.ofMinutes(jwtProperties.getAccessTokenExpirationMinutes()).getSeconds();
     }
 
-    private Claims extractClaims(String token){
+    private Claims extractClaims(String token) {
         return Jwts.parser()
                 .verifyWith(signingKey())
                 .build()
@@ -68,8 +69,7 @@ public class JwtService {
                 .getPayload();
     }
 
-    private SecretKey signingKey(){
+    private SecretKey signingKey() {
         return Keys.hmacShaKeyFor(jwtProperties.getSecret().getBytes(StandardCharsets.UTF_8));
     }
-
 }

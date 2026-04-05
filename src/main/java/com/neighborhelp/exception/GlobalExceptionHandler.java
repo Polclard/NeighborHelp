@@ -22,10 +22,10 @@ public class GlobalExceptionHandler {
     public ApiErrorResponse handleMethodArgumentNotValid(
             MethodArgumentNotValidException exception,
             HttpServletRequest request
-    ){
+    ) {
         Map<String, String> validationErrors = new LinkedHashMap<>();
 
-        for(FieldError fieldError : exception.getBindingResult().getFieldErrors()){
+        for (FieldError fieldError : exception.getBindingResult().getFieldErrors()) {
             validationErrors.putIfAbsent(
                 fieldError.getField(),
                 Optional.ofNullable(fieldError.getDefaultMessage()).orElse("Invalid value")
@@ -47,12 +47,12 @@ public class GlobalExceptionHandler {
     public ApiErrorResponse handleConstraintViolation(
             ConstraintViolationException exception,
             HttpServletRequest request
-    ){
+    ) {
         Map<String, String> validationErrors = new LinkedHashMap<>();
 
-        exception.getConstraintViolations().forEach(constraintViolation -> {
-            validationErrors.put(constraintViolation.getPropertyPath().toString(), constraintViolation.getMessage());
-        });
+        exception.getConstraintViolations().forEach(violation ->
+            validationErrors.put(violation.getPropertyPath().toString(), violation.getMessage())
+        );
 
         return new ApiErrorResponse(
                 OffsetDateTime.now(),
@@ -64,12 +64,60 @@ public class GlobalExceptionHandler {
         );
     }
 
+    @ExceptionHandler(ConflictException.class)
+    @ResponseStatus(HttpStatus.CONFLICT)
+    public ApiErrorResponse handleConflict(
+            ConflictException exception,
+            HttpServletRequest request
+    ) {
+        return new ApiErrorResponse(
+                OffsetDateTime.now(),
+                HttpStatus.CONFLICT.value(),
+                HttpStatus.CONFLICT.getReasonPhrase(),
+                exception.getMessage(),
+                request.getRequestURI(),
+                Map.of()
+        );
+    }
+
+    @ExceptionHandler(UnauthorizedException.class)
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
+    public ApiErrorResponse handleUnauthorized(
+            UnauthorizedException exception,
+            HttpServletRequest request
+    ) {
+        return new ApiErrorResponse(
+                OffsetDateTime.now(),
+                HttpStatus.UNAUTHORIZED.value(),
+                HttpStatus.UNAUTHORIZED.getReasonPhrase(),
+                exception.getMessage(),
+                request.getRequestURI(),
+                Map.of()
+        );
+    }
+
+    @ExceptionHandler(ForbiddenException.class)
+    @ResponseStatus(HttpStatus.FORBIDDEN)
+    public ApiErrorResponse handleForbidden(
+            ForbiddenException exception,
+            HttpServletRequest request
+    ) {
+        return new ApiErrorResponse(
+                OffsetDateTime.now(),
+                HttpStatus.FORBIDDEN.value(),
+                HttpStatus.FORBIDDEN.getReasonPhrase(),
+                exception.getMessage(),
+                request.getRequestURI(),
+                Map.of()
+        );
+    }
+
     @ExceptionHandler(IllegalArgumentException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ApiErrorResponse handleIllegalArgument(
             IllegalArgumentException exception,
             HttpServletRequest request
-    ){
+    ) {
         return new ApiErrorResponse(
                 OffsetDateTime.now(),
                 HttpStatus.BAD_REQUEST.value(),
@@ -85,7 +133,7 @@ public class GlobalExceptionHandler {
     public ApiErrorResponse handleGenericException(
             Exception exception,
             HttpServletRequest request
-    ){
+    ) {
         return new ApiErrorResponse(
                 OffsetDateTime.now(),
                 HttpStatus.INTERNAL_SERVER_ERROR.value(),
