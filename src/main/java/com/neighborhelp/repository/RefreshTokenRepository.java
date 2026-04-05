@@ -8,6 +8,8 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface RefreshTokenRepository extends JpaRepository<RefreshToken, UUID> {
-    Optional<RefreshToken> findByToken(String token);
-    List<RefreshToken> findAllByUserId(UUID userId);
+
+    Optional<RefreshToken> findByTokenAndRevokedAtIsNull(String token);
+
+    List<RefreshToken> findAllByUserIdAndRevokedAtIsNull(UUID userId);
 }
