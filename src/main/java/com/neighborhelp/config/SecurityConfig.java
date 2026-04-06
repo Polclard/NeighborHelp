@@ -1,6 +1,8 @@
 package com.neighborhelp.config;
 
 import com.neighborhelp.security.JwtAuthenticationFilter;
+import com.neighborhelp.security.RestAccessDeniedHandler;
+import com.neighborhelp.security.RestAuthenticationEntryPoint;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -26,8 +28,19 @@ import java.util.List;
 @EnableConfigurationProperties(JwtProperties.class)
 public class SecurityConfig {
 
+    private final RestAuthenticationEntryPoint restAuthenticationEntryPoint;
+    private final RestAccessDeniedHandler restAccessDeniedHandler;
+
     @Value("${app.cors.allowed-origins:http://localhost:3000}")
     private String allowedOrigins;
+
+    public SecurityConfig(
+        RestAuthenticationEntryPoint restAuthenticationEntryPoint,
+        RestAccessDeniedHandler restAccessDeniedHandler
+    ) {
+        this.restAuthenticationEntryPoint = restAuthenticationEntryPoint;
+        this.restAccessDeniedHandler = restAccessDeniedHandler;
+    }
 
     @Bean
     public SecurityFilterChain securityFilterChain(
@@ -41,11 +54,17 @@ public class SecurityConfig {
                 .formLogin(AbstractHttpConfigurer::disable)
                 .logout(AbstractHttpConfigurer::disable)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .exceptionHandling(exceptions -> exceptions
+                        .authenticationEntryPoint(restAuthenticationEntryPoint)
+                        .accessDeniedHandler(restAccessDeniedHandler)
+                )
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/posts/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/uploads/**").permitAll()
                         .requestMatchers("/error").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/profiles/**").permitAll()
                         .anyRequest().authenticated()
                 );
 

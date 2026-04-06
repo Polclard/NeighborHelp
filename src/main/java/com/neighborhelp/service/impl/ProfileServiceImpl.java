@@ -1,0 +1,167 @@
+package com.neighborhelp.service.impl;
+
+import com.neighborhelp.dto.profile.OwnProfileResponse;
+import com.neighborhelp.dto.profile.PublicProfileResponse;
+import com.neighborhelp.dto.profile.UpdateProfileRequest;
+import com.neighborhelp.dto.profile.UserReviewResponse;
+import com.neighborhelp.exception.NotFoundException;
+import com.neighborhelp.model.Review;
+import com.neighborhelp.model.User;
+import com.neighborhelp.repository.ReviewRepository;
+import com.neighborhelp.repository.UserRepository;
+import com.neighborhelp.service.FileStorageService;
+import com.neighborhelp.service.ProfileService;
+import org.springframework.context.annotation.Profile;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.UUID;
+
+@Service
+@Transactional
+@Profile("!test")
+public class ProfileServiceImpl implements ProfileService {
+
+    private static final long MAX_AVATAR_SIZE_BYTES = 5 * 1024 * 1024;
+
+    private final UserRepository userRepository;
+    private final ReviewRepository reviewRepository;
+    private final FileStorageService fileStorageService;
+
+    public ProfileServiceImpl(
+            UserRepository userRepository,
+            ReviewRepository reviewRepository,
+            FileStorageService fileStorageService
+    ) {
+        this.userRepository = userRepository;
+        this.reviewRepository = reviewRepository;
+        this.fileStorageService = fileStorageService;
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public OwnProfileResponse getOwnProfile(UUID userId) {
+        User user = getActiveUser(userId);
+        return toOwnProfileResponse(user);
+    }
+
+    @Override
+    public OwnProfileResponse updateOwnProfile(UUID userId, UpdateProfileRequest request) {
+        User user = getActiveUser(userId);
+        user.setFirstName(request.firstName().trim());
+        user.setLastName(request.lastName().trim());
+        user.setPhoneNumber(normalizeNullable(request.phoneNumber()));
+        user.setBio(normalizeNullable(request.bio()));
+        return toOwnProfileResponse(user);
+    }
+
+    @Override
+    public OwnProfileResponse uploadAvatar(UUID userId, MultipartFile file) {
+        User user = getActiveUser(userId);
+        validateAvatar(file);
+        user.setProfilePicture(fileStorageService.storeProfileAvatar(userId, file));
+        return toOwnProfileResponse(user);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public PublicProfileResponse getPublicProfile(UUID userId) {
+        User user = getActiveUser(userId);
+        return new PublicProfileResponse(
+                user.getId(),
+                user.getFirstName(),
+                user.getLastName(),
+                user.getBio(),
+                user.getProfilePicture(),
+                user.getAverageRating(),
+                user.getReviewCount()
+        );
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<UserReviewResponse> getUserReviews(UUID userId) {
+        getActiveUser(userId);
+
+        List<Review> reviews = reviewRepository.findAllByReviewedUserIdAndDeletedAtIsNullOrderByCreatedAtDesc(userId);
+        Map<UUID, User> reviewers = new HashMap<>();
+
+        for (Review review : reviews) {
+            userRepository.findByIdAndDeletedAtIsNull(review.getReviewerId())
+                    .ifPresent(user -> reviewers.put(review.getReviewerId(), user));
+        }
+
+        return reviews.stream()
+                .map(review -> {
+                    User reviewer = reviewers.get(review.getReviewerId());
+
+                    return new UserReviewResponse(
+                            review.getId(),
+                            review.getPostId(),
+                            review.getReviewerId(),
+                            reviewer != null ? reviewer.getFirstName() : "Unknown",
+                            reviewer != null ? reviewer.getLastName() : "User",
+                            review.getRating(),
+                            review.getComment(),
+                            review.getCreatedAt()
+                    );
+                })
+                .toList();
+    }
+
+    private User getActiveUser(UUID userId) {
+        return userRepository.findByIdAndDeletedAtIsNull(userId)
+                .orElseThrow(() -> new NotFoundException("User not found"));
+    }
+
+    private OwnProfileResponse toOwnProfileResponse(User user) {
+        return new OwnProfileResponse(
+                user.getId(),
+                user.getFirstName(),
+                user.getLastName(),
+                user.getEmail(),
+                user.getPhoneNumber(),
+                user.getBio(),
+                user.getProfilePicture(),
+                user.getRole(),
+                user.getAverageRating(),
+                user.getReviewCount()
+        );
+    }
+
+    private String normalizeNullable(String value) {
+        if (value == null) {
+            return null;
+        }
+
+        String trimmed = value.trim();
+        return trimmed.isEmpty() ? null : trimmed;
+    }
+
+    private void validateAvatar(MultipartFile file) {
+        if (file == null || file.isEmpty()) {
+            throw new IllegalArgumentException("Avatar file is required");
+        }
+
+        if (file.getSize() > MAX_AVATAR_SIZE_BYTES) {
+            throw new IllegalArgumentException("Avatar file must be 5 MB or smaller");
+        }
+
+        String contentType = file.getContentType();
+        if (contentType == null) {
+            throw new IllegalArgumentException("Avatar file type is missing");
+        }
+
+        String normalizedContentType = contentType.toLowerCase(Locale.ROOT);
+        if (!normalizedContentType.equals("image/jpeg")
+                && !normalizedContentType.equals("image/png")
+                && !normalizedContentType.equals("image/webp")) {
+            throw new IllegalArgumentException("Avatar must be a JPG, PNG, or WEBP image");
+        }
+    }
+}
