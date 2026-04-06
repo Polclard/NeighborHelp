@@ -8,6 +8,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
 
 import java.time.OffsetDateTime;
 import java.util.LinkedHashMap;
@@ -61,6 +62,22 @@ public class GlobalExceptionHandler {
                 "Constraint validation failed",
                 request.getRequestURI(),
                 validationErrors
+        );
+    }
+
+    @ExceptionHandler(MaxUploadSizeExceededException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ApiErrorResponse handleMaxUploadSizeExceeded(
+            MaxUploadSizeExceededException exception,
+            HttpServletRequest request
+    ) {
+        return new ApiErrorResponse(
+                OffsetDateTime.now(),
+                HttpStatus.BAD_REQUEST.value(),
+                HttpStatus.BAD_REQUEST.getReasonPhrase(),
+                "Avatar file must be 5 MB or smaller",
+                request.getRequestURI(),
+                Map.of()
         );
     }
 
@@ -141,6 +158,22 @@ public class GlobalExceptionHandler {
                 "Unexpected server error",
                 request.getRequestURI(),
                 Map.of()
+        );
+    }
+
+    @ExceptionHandler(NotFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ApiErrorResponse handleNotFound(
+        NotFoundException exception,
+        HttpServletRequest request
+    ) {
+        return new ApiErrorResponse(
+            OffsetDateTime.now(),
+            HttpStatus.NOT_FOUND.value(),
+            HttpStatus.NOT_FOUND.getReasonPhrase(),
+            exception.getMessage(),
+            request.getRequestURI(),
+            Map.of()
         );
     }
 }
