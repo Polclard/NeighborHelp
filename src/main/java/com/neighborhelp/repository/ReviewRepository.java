@@ -9,5 +9,5 @@ import java.util.UUID;
 
 public interface ReviewRepository extends JpaRepository<Review, UUID> {
     List<Review> findAllByReviewedUserIdAndDeletedAtIsNullOrderByCreatedAtDesc(UUID reviewedUserId);
-    Optional<Review> findByPostIdAndReviewerId(UUID postId, UUID reviewerId);
+    Optional<Review> findByPostIdAndReviewerIdAndDeletedAtIsNull(UUID postId, UUID reviewerId);
 }
