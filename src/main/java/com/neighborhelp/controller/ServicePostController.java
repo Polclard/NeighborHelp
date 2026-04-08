@@ -55,6 +55,15 @@ public class ServicePostController {
         return servicePostService.updatePost(user.getId(), postId, request);
     }
 
+    @PostMapping("/api/posts/{postId}/accept")
+    public ServicePostDetailResponse acceptRequest(
+            Authentication authentication,
+            @PathVariable UUID postId
+    ) {
+        AuthenticatedUser user = (AuthenticatedUser) authentication.getPrincipal();
+        return servicePostService.acceptRequest(user.getId(), postId);
+    }
+
     @PatchMapping("/api/posts/{postId}/status")
     public ServicePostDetailResponse updatePostStatus(
             Authentication authentication,

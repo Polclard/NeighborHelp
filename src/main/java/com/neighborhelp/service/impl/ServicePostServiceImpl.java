@@ -175,6 +175,35 @@ public class ServicePostServiceImpl implements ServicePostService {
         return toDetailResponse(post);
     }
 
+    @Override
+    public ServicePostDetailResponse acceptRequest(UUID helperUserId, UUID postId) {
+        User helper = getActiveUser(helperUserId);
+
+        ServicePost post = servicePostRepository.findByIdAndDeletedAtIsNull(postId)
+                .orElseThrow(() -> new NotFoundException("Post not found"));
+
+        if (post.getPostType() != PostType.SERVICE_REQUEST) {
+            throw new ConflictException("Only service requests can be accepted");
+        }
+
+        if (post.getUserId().equals(helper.getId())) {
+            throw new ConflictException("You cannot accept your own request");
+        }
+
+        if (post.getStatus() != PostStatus.REQUESTING) {
+            throw new ConflictException("This request is no longer open for acceptance");
+        }
+
+        if (post.getAcceptedUserId() != null) {
+            throw new ConflictException("This request has already been accepted");
+        }
+
+        post.setAcceptedUserId(helper.getId());
+        post.setStatus(PostStatus.SERVICE_ACCEPTED);
+
+        return toDetailResponse(post);
+    }
+
     private User getActiveUser(UUID userId) {
         return userRepository.findByIdAndDeletedAtIsNull(userId)
                 .orElseThrow(() -> new NotFoundException("User not found"));
@@ -220,8 +249,7 @@ public class ServicePostServiceImpl implements ServicePostService {
 
     private void validateRequestStatusTransition(PostStatus currentStatus, PostStatus nextStatus) {
         boolean allowed =
-                (currentStatus == PostStatus.REQUESTING
-                        && (nextStatus == PostStatus.SERVICE_ACCEPTED || nextStatus == PostStatus.CANCELLED))
+                (currentStatus == PostStatus.REQUESTING && nextStatus == PostStatus.CANCELLED)
                         || (currentStatus == PostStatus.SERVICE_ACCEPTED
                         && (nextStatus == PostStatus.SERVICE_DONE || nextStatus == PostStatus.CANCELLED));
 

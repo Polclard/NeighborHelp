@@ -22,6 +22,8 @@ public interface ServicePostService {
 
     void deletePostPhoto(UUID userId, UUID postId, UUID photoId);
 
+    ServicePostDetailResponse acceptRequest(UUID helperUserId, UUID postId);
+
     ServicePostDetailResponse updatePostStatus(UUID userId, UUID postId, UpdatePostStatusRequest request);
 
     List<ServicePostSummaryResponse> getPublicPosts();

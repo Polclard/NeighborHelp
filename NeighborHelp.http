@@ -429,7 +429,11 @@ Content-Type: {{json}}
 client.global.set("requestLifecyclePostId", response.body.id);
 %}
 
-### Posts - Update lifecycle request status to SERVICE_ACCEPTED
+### Posts - Owner cannot accept own request
+POST {{baseUrl}}/api/posts/{{requestLifecyclePostId}}/accept
+Authorization: Bearer {{userAAccessToken}}
+
+### Posts - Direct patch to SERVICE_ACCEPTED should return 409
 PATCH {{baseUrl}}/api/posts/{{requestLifecyclePostId}}/status
 Authorization: Bearer {{userAAccessToken}}
 Content-Type: {{json}}
@@ -437,6 +441,14 @@ Content-Type: {{json}}
 {
   "status": "SERVICE_ACCEPTED"
 }
+
+### Posts - Accept lifecycle request as user B
+POST {{baseUrl}}/api/posts/{{requestLifecyclePostId}}/accept
+Authorization: Bearer {{userBAccessToken}}
+
+### Posts - Accept already accepted request should return 409
+POST {{baseUrl}}/api/posts/{{requestLifecyclePostId}}/accept
+Authorization: Bearer {{userBAccessToken}}
 
 ### Posts - Update lifecycle request status to SERVICE_DONE
 PATCH {{baseUrl}}/api/posts/{{requestLifecyclePostId}}/status
@@ -474,20 +486,6 @@ Content-Type: {{json}}
   "status": "OFFERING"
 }
 
-### Auth - Logout user A
-# @name logoutUserA
-POST {{baseUrl}}/api/auth/logout
-Cookie: {{userARefreshCookie}}
-
-> {%
-client.global.set("userARevokedRefreshCookie", client.global.get("userARefreshCookie"));
-client.global.clear("userARefreshCookie");
-%}
-
-### Auth - Refresh after logout should return 401
-POST {{baseUrl}}/api/auth/refresh
-Cookie: {{userARevokedRefreshCookie}}
-
 ### Posts - Close offer
 PATCH {{baseUrl}}/api/posts/{{offerPostId}}/status
 Authorization: Bearer {{userAAccessToken}}
@@ -505,3 +503,17 @@ Content-Type: {{json}}
 {
   "status": "OFFERING"
 }
+
+### Auth - Logout user A
+# @name logoutUserA
+POST {{baseUrl}}/api/auth/logout
+Cookie: {{userARefreshCookie}}
+
+> {%
+client.global.set("userARevokedRefreshCookie", client.global.get("userARefreshCookie"));
+client.global.clear("userARefreshCookie");
+%}
+
+### Auth - Refresh after logout should return 401
+POST {{baseUrl}}/api/auth/refresh
+Cookie: {{userARevokedRefreshCookie}}
