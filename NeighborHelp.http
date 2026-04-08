@@ -1,0 +1,507 @@
+### NeighborHelp API collection
+### Run top to bottom for a fresh smoke flow.
+### Change `suffix` if you want to re-register the same users.
+### Replace the file paths before running upload requests.
+
+@baseUrl = http://localhost:8080
+@json = application/json
+@suffix = 001
+@userAEmail = smoke-a-{{suffix}}@example.com
+@userBEmail = smoke-b-{{suffix}}@example.com
+@userPassword = Password123!
+@avatarFile = /absolute/path/to/avatar.png
+@postPhotoFile = /absolute/path/to/post-photo.png
+@invalidFile = /absolute/path/to/not-an-image.txt
+
+### Auth - Register user A
+# @name registerUserA
+POST {{baseUrl}}/api/auth/register
+Content-Type: {{json}}
+
+{
+  "firstName": "Smoke",
+  "lastName": "TesterA",
+  "email": "{{userAEmail}}",
+  "password": "{{userPassword}}",
+  "confirmPassword": "{{userPassword}}",
+  "phoneNumber": "+38970111111"
+}
+
+> {%
+client.global.set("userAId", response.body.user.id);
+client.global.set("userAAccessToken", response.body.accessToken);
+const cookies = response.headers.valuesOf("Set-Cookie");
+if (cookies.length > 0) {
+  client.global.set("userARefreshCookie", cookies[0].split(";")[0]);
+}
+%}
+
+### Auth - Duplicate register user A should return 409
+POST {{baseUrl}}/api/auth/register
+Content-Type: {{json}}
+
+{
+  "firstName": "Smoke",
+  "lastName": "TesterA",
+  "email": "{{userAEmail}}",
+  "password": "{{userPassword}}",
+  "confirmPassword": "{{userPassword}}",
+  "phoneNumber": "+38970111111"
+}
+
+### Auth - Register user B
+# @name registerUserB
+POST {{baseUrl}}/api/auth/register
+Content-Type: {{json}}
+
+{
+  "firstName": "Smoke",
+  "lastName": "TesterB",
+  "email": "{{userBEmail}}",
+  "password": "{{userPassword}}",
+  "confirmPassword": "{{userPassword}}",
+  "phoneNumber": "+38970222222"
+}
+
+> {%
+client.global.set("userBId", response.body.user.id);
+client.global.set("userBAccessToken", response.body.accessToken);
+const cookies = response.headers.valuesOf("Set-Cookie");
+if (cookies.length > 0) {
+  client.global.set("userBRefreshCookie", cookies[0].split(";")[0]);
+}
+%}
+
+### Auth - Login user A
+# @name loginUserA
+POST {{baseUrl}}/api/auth/login
+Content-Type: {{json}}
+
+{
+  "email": "{{userAEmail}}",
+  "password": "{{userPassword}}"
+}
+
+> {%
+client.global.set("userAAccessToken", response.body.accessToken);
+const cookies = response.headers.valuesOf("Set-Cookie");
+if (cookies.length > 0) {
+  client.global.set("userARefreshCookie", cookies[0].split(";")[0]);
+}
+%}
+
+### Auth - Wrong password should return 401
+POST {{baseUrl}}/api/auth/login
+Content-Type: {{json}}
+
+{
+  "email": "{{userAEmail}}",
+  "password": "WrongPassword123!"
+}
+
+### Auth - Refresh user A token
+# @name refreshUserA
+POST {{baseUrl}}/api/auth/refresh
+Cookie: {{userARefreshCookie}}
+
+> {%
+client.global.set("userAAccessToken", response.body.accessToken);
+const cookies = response.headers.valuesOf("Set-Cookie");
+if (cookies.length > 0) {
+  client.global.set("userARefreshCookie", cookies[0].split(";")[0]);
+}
+%}
+
+### Profile - Own profile without auth should return 401
+GET {{baseUrl}}/api/users/me
+
+### Profile - Get own profile user A
+GET {{baseUrl}}/api/users/me
+Authorization: Bearer {{userAAccessToken}}
+
+### Profile - Update own profile user A
+PUT {{baseUrl}}/api/users/me
+Authorization: Bearer {{userAAccessToken}}
+Content-Type: {{json}}
+
+{
+  "firstName": "SmokeUpdated",
+  "lastName": "TesterA",
+  "phoneNumber": "+38970999999",
+  "bio": "Helping in the neighborhood."
+}
+
+### Profile - Upload avatar user A
+# @name uploadAvatarUserA
+POST {{baseUrl}}/api/users/me/avatar
+Authorization: Bearer {{userAAccessToken}}
+Content-Type: multipart/form-data; boundary=Boundary
+
+--Boundary
+Content-Disposition: form-data; name="file"; filename="avatar.png"
+Content-Type: image/png
+
+< {{avatarFile}}
+--Boundary--
+
+> {%
+client.global.set("avatarUrl", response.body.profilePicture);
+%}
+
+### Profile - Invalid avatar upload should return 400
+POST {{baseUrl}}/api/users/me/avatar
+Authorization: Bearer {{userAAccessToken}}
+Content-Type: multipart/form-data; boundary=Boundary
+
+--Boundary
+Content-Disposition: form-data; name="file"; filename="invalid.txt"
+Content-Type: text/plain
+
+< {{invalidFile}}
+--Boundary--
+
+### Profile - Open uploaded avatar
+GET {{baseUrl}}{{avatarUrl}}
+
+### Profile - Public profile user A
+GET {{baseUrl}}/api/profiles/{{userAId}}
+
+### Profile - Public reviews for user A
+GET {{baseUrl}}/api/profiles/{{userAId}}/reviews
+
+### Posts - Create request post user A
+# @name createRequestPost
+POST {{baseUrl}}/api/posts
+Authorization: Bearer {{userAAccessToken}}
+Content-Type: {{json}}
+
+{
+  "title": "Need help carrying groceries",
+  "description": "I need someone to help me carry groceries to my apartment.",
+  "postType": "SERVICE_REQUEST",
+  "category": "Errands",
+  "latitude": 41.9981,
+  "longitude": 21.4254,
+  "addressLabel": "Debar Maalo, Skopje",
+  "contactPhone": "+38970999999",
+  "contactEmail": "{{userAEmail}}"
+}
+
+> {%
+client.global.set("requestPostId", response.body.id);
+%}
+
+### Posts - Create offer post user A
+# @name createOfferPost
+POST {{baseUrl}}/api/posts
+Authorization: Bearer {{userAAccessToken}}
+Content-Type: {{json}}
+
+{
+  "title": "Can help with dog walking",
+  "description": "Available evenings for 30 minute neighborhood walks.",
+  "postType": "SERVICE_OFFER",
+  "category": "Pets",
+  "latitude": 41.9965,
+  "longitude": 21.4314,
+  "addressLabel": "Centar, Skopje",
+  "contactPhone": "+38970999999",
+  "contactEmail": "{{userAEmail}}"
+}
+
+> {%
+client.global.set("offerPostId", response.body.id);
+%}
+
+### Posts - Invalid create should return 400
+POST {{baseUrl}}/api/posts
+Authorization: Bearer {{userAAccessToken}}
+Content-Type: {{json}}
+
+{
+  "title": "Bad coordinates",
+  "description": "This should fail validation.",
+  "postType": "SERVICE_REQUEST",
+  "category": "Errands",
+  "latitude": 999,
+  "longitude": 21.4254,
+  "addressLabel": "Skopje",
+  "contactPhone": "+38970999999",
+  "contactEmail": "{{userAEmail}}"
+}
+
+### Posts - Public list
+GET {{baseUrl}}/api/posts
+
+### Posts - Detail request post
+GET {{baseUrl}}/api/posts/{{requestPostId}}
+
+### Posts - Own posts user A
+GET {{baseUrl}}/api/users/me/posts
+Authorization: Bearer {{userAAccessToken}}
+
+### Posts - Update request post as owner
+PUT {{baseUrl}}/api/posts/{{requestPostId}}
+Authorization: Bearer {{userAAccessToken}}
+Content-Type: {{json}}
+
+{
+  "title": "Need help with groceries and bags",
+  "description": "I need someone to carry groceries and a few heavy bags upstairs.",
+  "category": "Errands",
+  "latitude": 41.9985,
+  "longitude": 21.4259,
+  "addressLabel": "Debar Maalo, Skopje",
+  "contactPhone": "+38970999999",
+  "contactEmail": "{{userAEmail}}"
+}
+
+### Posts - Update request post as user B should return 403
+PUT {{baseUrl}}/api/posts/{{requestPostId}}
+Authorization: Bearer {{userBAccessToken}}
+Content-Type: {{json}}
+
+{
+  "title": "Hijacked title",
+  "description": "Should not work",
+  "category": "Errands",
+  "latitude": 41.9985,
+  "longitude": 21.4259,
+  "addressLabel": "Debar Maalo, Skopje",
+  "contactPhone": "+38970222222",
+  "contactEmail": "{{userBEmail}}"
+}
+
+### Posts - Upload photo to request post
+# @name uploadRequestPostPhoto
+POST {{baseUrl}}/api/posts/{{requestPostId}}/photos
+Authorization: Bearer {{userAAccessToken}}
+Content-Type: multipart/form-data; boundary=Boundary
+
+--Boundary
+Content-Disposition: form-data; name="file"; filename="post-photo.png"
+Content-Type: image/png
+
+< {{postPhotoFile}}
+--Boundary--
+
+> {%
+if (response.body.photos && response.body.photos.length > 0) {
+  client.global.set("requestPhotoId", response.body.photos[0].id);
+  client.global.set("requestPostPhotoUrl", response.body.photos[0].filePath);
+}
+%}
+
+### Posts - Upload photo 2
+POST {{baseUrl}}/api/posts/{{requestPostId}}/photos
+Authorization: Bearer {{userAAccessToken}}
+Content-Type: multipart/form-data; boundary=Boundary
+
+--Boundary
+Content-Disposition: form-data; name="file"; filename="post-photo.png"
+Content-Type: image/png
+
+< {{postPhotoFile}}
+--Boundary--
+
+### Posts - Upload photo 3
+POST {{baseUrl}}/api/posts/{{requestPostId}}/photos
+Authorization: Bearer {{userAAccessToken}}
+Content-Type: multipart/form-data; boundary=Boundary
+
+--Boundary
+Content-Disposition: form-data; name="file"; filename="post-photo.png"
+Content-Type: image/png
+
+< {{postPhotoFile}}
+--Boundary--
+
+### Posts - Upload photo 4
+POST {{baseUrl}}/api/posts/{{requestPostId}}/photos
+Authorization: Bearer {{userAAccessToken}}
+Content-Type: multipart/form-data; boundary=Boundary
+
+--Boundary
+Content-Disposition: form-data; name="file"; filename="post-photo.png"
+Content-Type: image/png
+
+< {{postPhotoFile}}
+--Boundary--
+
+### Posts - Upload photo 5
+POST {{baseUrl}}/api/posts/{{requestPostId}}/photos
+Authorization: Bearer {{userAAccessToken}}
+Content-Type: multipart/form-data; boundary=Boundary
+
+--Boundary
+Content-Disposition: form-data; name="file"; filename="post-photo.png"
+Content-Type: image/png
+
+< {{postPhotoFile}}
+--Boundary--
+
+### Posts - Upload photo 6 should return 409
+POST {{baseUrl}}/api/posts/{{requestPostId}}/photos
+Authorization: Bearer {{userAAccessToken}}
+Content-Type: multipart/form-data; boundary=Boundary
+
+--Boundary
+Content-Disposition: form-data; name="file"; filename="post-photo.png"
+Content-Type: image/png
+
+< {{postPhotoFile}}
+--Boundary--
+
+### Posts - Invalid post photo should return 400
+POST {{baseUrl}}/api/posts/{{requestPostId}}/photos
+Authorization: Bearer {{userAAccessToken}}
+Content-Type: multipart/form-data; boundary=Boundary
+
+--Boundary
+Content-Disposition: form-data; name="file"; filename="invalid.txt"
+Content-Type: text/plain
+
+< {{invalidFile}}
+--Boundary--
+
+### Posts - Upload photo as user B should return 403
+POST {{baseUrl}}/api/posts/{{requestPostId}}/photos
+Authorization: Bearer {{userBAccessToken}}
+Content-Type: multipart/form-data; boundary=Boundary
+
+--Boundary
+Content-Disposition: form-data; name="file"; filename="post-photo.png"
+Content-Type: image/png
+
+< {{postPhotoFile}}
+--Boundary--
+
+### Posts - Open uploaded post photo
+GET {{baseUrl}}{{requestPostPhotoUrl}}
+
+### Posts - Detail request post after photo upload
+GET {{baseUrl}}/api/posts/{{requestPostId}}
+
+### Posts - Delete request photo as user B should return 403
+DELETE {{baseUrl}}/api/posts/{{requestPostId}}/photos/{{requestPhotoId}}
+Authorization: Bearer {{userBAccessToken}}
+
+### Posts - Delete uploaded request photo as owner
+DELETE {{baseUrl}}/api/posts/{{requestPostId}}/photos/{{requestPhotoId}}
+Authorization: Bearer {{userAAccessToken}}
+
+### Posts - Detail request post after photo deletion
+GET {{baseUrl}}/api/posts/{{requestPostId}}
+
+### Posts - Delete request post as owner
+DELETE {{baseUrl}}/api/posts/{{requestPostId}}
+Authorization: Bearer {{userAAccessToken}}
+
+### Posts - Deleted request post should return 404
+GET {{baseUrl}}/api/posts/{{requestPostId}}
+
+### Posts - Public list after delete
+GET {{baseUrl}}/api/posts
+
+### Posts - Own posts after delete
+GET {{baseUrl}}/api/users/me/posts
+Authorization: Bearer {{userAAccessToken}}
+
+### Posts - Create lifecycle request post
+# @name createRequestLifecyclePost
+POST {{baseUrl}}/api/posts
+Authorization: Bearer {{userAAccessToken}}
+Content-Type: {{json}}
+
+{
+  "title": "Need help moving furniture",
+  "description": "I need help moving furniture upstairs.",
+  "postType": "SERVICE_REQUEST",
+  "category": "Moving",
+  "latitude": 41.9991,
+  "longitude": 21.4264,
+  "addressLabel": "Karposh, Skopje",
+  "contactPhone": "+38970999999",
+  "contactEmail": "{{userAEmail}}"
+}
+
+> {%
+client.global.set("requestLifecyclePostId", response.body.id);
+%}
+
+### Posts - Update lifecycle request status to SERVICE_ACCEPTED
+PATCH {{baseUrl}}/api/posts/{{requestLifecyclePostId}}/status
+Authorization: Bearer {{userAAccessToken}}
+Content-Type: {{json}}
+
+{
+  "status": "SERVICE_ACCEPTED"
+}
+
+### Posts - Update lifecycle request status to SERVICE_DONE
+PATCH {{baseUrl}}/api/posts/{{requestLifecyclePostId}}/status
+Authorization: Bearer {{userAAccessToken}}
+Content-Type: {{json}}
+
+{
+  "status": "SERVICE_DONE"
+}
+
+### Posts - Invalid request status transition should return 409
+PATCH {{baseUrl}}/api/posts/{{requestLifecyclePostId}}/status
+Authorization: Bearer {{userAAccessToken}}
+Content-Type: {{json}}
+
+{
+  "status": "REQUESTING"
+}
+
+### Posts - Update offer status to UNAVAILABLE
+PATCH {{baseUrl}}/api/posts/{{offerPostId}}/status
+Authorization: Bearer {{userAAccessToken}}
+Content-Type: {{json}}
+
+{
+  "status": "UNAVAILABLE"
+}
+
+### Posts - Update offer status back to OFFERING
+PATCH {{baseUrl}}/api/posts/{{offerPostId}}/status
+Authorization: Bearer {{userAAccessToken}}
+Content-Type: {{json}}
+
+{
+  "status": "OFFERING"
+}
+
+### Auth - Logout user A
+# @name logoutUserA
+POST {{baseUrl}}/api/auth/logout
+Cookie: {{userARefreshCookie}}
+
+> {%
+client.global.set("userARevokedRefreshCookie", client.global.get("userARefreshCookie"));
+client.global.clear("userARefreshCookie");
+%}
+
+### Auth - Refresh after logout should return 401
+POST {{baseUrl}}/api/auth/refresh
+Cookie: {{userARevokedRefreshCookie}}
+
+### Posts - Close offer
+PATCH {{baseUrl}}/api/posts/{{offerPostId}}/status
+Authorization: Bearer {{userAAccessToken}}
+Content-Type: {{json}}
+
+{
+  "status": "CLOSED"
+}
+
+### Posts - Invalid offer status transition should return 409
+PATCH {{baseUrl}}/api/posts/{{offerPostId}}/status
+Authorization: Bearer {{userAAccessToken}}
+Content-Type: {{json}}
+
+{
+  "status": "OFFERING"
+}

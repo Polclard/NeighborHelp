@@ -19,23 +19,34 @@ public class LocalFileStorageService implements FileStorageService {
 
     @Override
     public String storeProfileAvatar(UUID userId, MultipartFile file) {
+        return storeImage(Path.of("avatars"), userId + "-" + UUID.randomUUID(), file);
+    }
+
+    @Override
+    public String storePostPhoto(UUID postId, MultipartFile file) {
+        return storeImage(Path.of("posts", postId.toString()), UUID.randomUUID().toString(), file);
+    }
+
+    private String storeImage(Path relativeDirectory, String filenamePrefix, MultipartFile file) {
         try {
             Path rootDirectory = Paths.get(uploadDir).toAbsolutePath().normalize();
-            Path avatarDirectory = rootDirectory.resolve("avatars");
-            Files.createDirectories(avatarDirectory);
+            Path targetDirectory = rootDirectory.resolve(relativeDirectory).normalize();
+            Files.createDirectories(targetDirectory);
 
             String extension = resolveExtension(file.getContentType());
-            String filename = userId + "-" + UUID.randomUUID() + extension;
-            Path target = avatarDirectory.resolve(filename).normalize();
+            String filename = filenamePrefix + extension;
+            Path target = targetDirectory.resolve(filename).normalize();
 
-            if (!target.startsWith(avatarDirectory)) {
+            if (!target.startsWith(targetDirectory)) {
                 throw new IllegalArgumentException("Invalid file path");
             }
 
             file.transferTo(target.toFile());
-            return "/uploads/avatars/" + filename;
+
+            String relativePath = relativeDirectory.resolve(filename).toString().replace("\\", "/");
+            return "/uploads/" + relativePath;
         } catch (IOException exception) {
-            throw new IllegalStateException("Failed to store avatar", exception);
+            throw new IllegalStateException("Failed to store image", exception);
         }
     }
 
