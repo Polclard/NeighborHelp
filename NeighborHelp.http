@@ -28,12 +28,12 @@ Content-Type: {{json}}
 }
 
 > {%
-client.global.set("userAId", response.body.user.id);
-client.global.set("userAAccessToken", response.body.accessToken);
-const cookies = response.headers.valuesOf("Set-Cookie");
-if (cookies.length > 0) {
-  client.global.set("userARefreshCookie", cookies[0].split(";")[0]);
-}
+    client.global.set("userAId", response.body.user.id);
+    client.global.set("userAAccessToken", response.body.accessToken);
+    const cookies = response.headers.valuesOf("Set-Cookie");
+    if (cookies.length > 0) {
+        client.global.set("userARefreshCookie", cookies[0].split(";")[0]);
+    }
 %}
 
 ### Auth - Duplicate register user A should return 409
@@ -64,12 +64,12 @@ Content-Type: {{json}}
 }
 
 > {%
-client.global.set("userBId", response.body.user.id);
-client.global.set("userBAccessToken", response.body.accessToken);
-const cookies = response.headers.valuesOf("Set-Cookie");
-if (cookies.length > 0) {
-  client.global.set("userBRefreshCookie", cookies[0].split(";")[0]);
-}
+    client.global.set("userBId", response.body.user.id);
+    client.global.set("userBAccessToken", response.body.accessToken);
+    const cookies = response.headers.valuesOf("Set-Cookie");
+    if (cookies.length > 0) {
+        client.global.set("userBRefreshCookie", cookies[0].split(";")[0]);
+    }
 %}
 
 ### Auth - Login user A
@@ -83,11 +83,11 @@ Content-Type: {{json}}
 }
 
 > {%
-client.global.set("userAAccessToken", response.body.accessToken);
-const cookies = response.headers.valuesOf("Set-Cookie");
-if (cookies.length > 0) {
-  client.global.set("userARefreshCookie", cookies[0].split(";")[0]);
-}
+    client.global.set("userAAccessToken", response.body.accessToken);
+    const cookies = response.headers.valuesOf("Set-Cookie");
+    if (cookies.length > 0) {
+        client.global.set("userARefreshCookie", cookies[0].split(";")[0]);
+    }
 %}
 
 ### Auth - Wrong password should return 401
@@ -105,11 +105,11 @@ POST {{baseUrl}}/api/auth/refresh
 Cookie: {{userARefreshCookie}}
 
 > {%
-client.global.set("userAAccessToken", response.body.accessToken);
-const cookies = response.headers.valuesOf("Set-Cookie");
-if (cookies.length > 0) {
-  client.global.set("userARefreshCookie", cookies[0].split(";")[0]);
-}
+    client.global.set("userAAccessToken", response.body.accessToken);
+    const cookies = response.headers.valuesOf("Set-Cookie");
+    if (cookies.length > 0) {
+        client.global.set("userARefreshCookie", cookies[0].split(";")[0]);
+    }
 %}
 
 ### Profile - Own profile without auth should return 401
@@ -145,7 +145,7 @@ Content-Type: image/png
 --Boundary--
 
 > {%
-client.global.set("avatarUrl", response.body.profilePicture);
+    client.global.set("avatarUrl", response.body.profilePicture);
 %}
 
 ### Profile - Invalid avatar upload should return 400
@@ -188,7 +188,7 @@ Content-Type: {{json}}
 }
 
 > {%
-client.global.set("requestPostId", response.body.id);
+    client.global.set("requestPostId", response.body.id);
 %}
 
 ### Posts - Create offer post user A
@@ -210,7 +210,7 @@ Content-Type: {{json}}
 }
 
 > {%
-client.global.set("offerPostId", response.body.id);
+    client.global.set("offerPostId", response.body.id);
 %}
 
 ### Posts - Invalid create should return 400
@@ -286,10 +286,10 @@ Content-Type: image/png
 --Boundary--
 
 > {%
-if (response.body.photos && response.body.photos.length > 0) {
-  client.global.set("requestPhotoId", response.body.photos[0].id);
-  client.global.set("requestPostPhotoUrl", response.body.photos[0].filePath);
-}
+    if (response.body.photos && response.body.photos.length > 0) {
+        client.global.set("requestPhotoId", response.body.photos[0].id);
+        client.global.set("requestPostPhotoUrl", response.body.photos[0].filePath);
+    }
 %}
 
 ### Posts - Upload photo 2
@@ -426,7 +426,7 @@ Content-Type: {{json}}
 }
 
 > {%
-client.global.set("requestLifecyclePostId", response.body.id);
+    client.global.set("requestLifecyclePostId", response.body.id);
 %}
 
 ### Posts - Owner cannot accept own request
@@ -504,14 +504,54 @@ Content-Type: {{json}}
   "status": "OFFERING"
 }
 
+### Reviews - Leave review for accepted helper
+POST {{baseUrl}}/api/posts/{{requestLifecyclePostId}}/reviews
+Authorization: Bearer {{userAAccessToken}}
+Content-Type: {{json}}
+
+{
+  "rating": 5,
+  "comment": "Reliable and on time."
+}
+
+> {%
+    client.global.set("reviewId", response.body.id);
+%}
+
+### Reviews - Duplicate review should return 409
+POST {{baseUrl}}/api/posts/{{requestLifecyclePostId}}/reviews
+Authorization: Bearer {{userAAccessToken}}
+Content-Type: {{json}}
+
+{
+  "rating": 5,
+  "comment": "Second review should fail."
+}
+
+### Reviews - Helper cannot review requester and should return 403
+POST {{baseUrl}}/api/posts/{{requestLifecyclePostId}}/reviews
+Authorization: Bearer {{userBAccessToken}}
+Content-Type: {{json}}
+
+{
+  "rating": 5,
+  "comment": "This should not be allowed."
+}
+
+### Profiles - Public reviews for helper
+GET {{baseUrl}}/api/profiles/{{userBId}}/reviews
+
+### Profiles - Public profile for helper should show updated rating
+GET {{baseUrl}}/api/profiles/{{userBId}}
+
 ### Auth - Logout user A
 # @name logoutUserA
 POST {{baseUrl}}/api/auth/logout
 Cookie: {{userARefreshCookie}}
 
 > {%
-client.global.set("userARevokedRefreshCookie", client.global.get("userARefreshCookie"));
-client.global.clear("userARefreshCookie");
+    client.global.set("userARevokedRefreshCookie", client.global.get("userARefreshCookie"));
+    client.global.clear("userARefreshCookie");
 %}
 
 ### Auth - Refresh after logout should return 401
