@@ -1,22 +1,28 @@
 package com.neighborhelp.service.impl;
 
 import com.neighborhelp.dto.post.CreateServicePostRequest;
+import com.neighborhelp.dto.post.PostPhotoResponse;
 import com.neighborhelp.dto.post.ServicePostDetailResponse;
 import com.neighborhelp.dto.post.ServicePostSummaryResponse;
+import com.neighborhelp.dto.post.UpdatePostStatusRequest;
 import com.neighborhelp.dto.post.UpdateServicePostRequest;
 import com.neighborhelp.exception.ConflictException;
 import com.neighborhelp.exception.ForbiddenException;
 import com.neighborhelp.exception.NotFoundException;
+import com.neighborhelp.model.PostPhoto;
 import com.neighborhelp.model.PostStatus;
 import com.neighborhelp.model.PostType;
 import com.neighborhelp.model.ServicePost;
 import com.neighborhelp.model.User;
+import com.neighborhelp.repository.PostPhotoRepository;
 import com.neighborhelp.repository.ServicePostRepository;
 import com.neighborhelp.repository.UserRepository;
+import com.neighborhelp.service.FileStorageService;
 import com.neighborhelp.service.ServicePostService;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.OffsetDateTime;
 import java.util.List;
@@ -28,15 +34,24 @@ import java.util.UUID;
 @Profile("!test")
 public class ServicePostServiceImpl implements ServicePostService {
 
+    private static final int MAX_POST_PHOTOS = 5;
+    private static final long MAX_IMAGE_SIZE_BYTES = 5 * 1024 * 1024;
+
     private final ServicePostRepository servicePostRepository;
     private final UserRepository userRepository;
+    private final PostPhotoRepository postPhotoRepository;
+    private final FileStorageService fileStorageService;
 
     public ServicePostServiceImpl(
             ServicePostRepository servicePostRepository,
-            UserRepository userRepository
+            UserRepository userRepository,
+            PostPhotoRepository postPhotoRepository,
+            FileStorageService fileStorageService
     ) {
         this.servicePostRepository = servicePostRepository;
         this.userRepository = userRepository;
+        this.postPhotoRepository = postPhotoRepository;
+        this.fileStorageService = fileStorageService;
     }
 
     @Override
@@ -61,8 +76,7 @@ public class ServicePostServiceImpl implements ServicePostService {
                 user
         );
 
-        ServicePost savedPost = servicePostRepository.save(post);
-        return toDetailResponse(savedPost);
+        return toDetailResponse(servicePostRepository.save(post));
     }
 
     @Override
@@ -90,6 +104,48 @@ public class ServicePostServiceImpl implements ServicePostService {
     public void deletePost(UUID userId, UUID postId) {
         ServicePost post = getOwnedEditablePost(userId, postId);
         post.setDeletedAt(OffsetDateTime.now());
+    }
+
+    @Override
+    public ServicePostDetailResponse uploadPostPhoto(UUID userId, UUID postId, MultipartFile file) {
+        ServicePost post = getOwnedEditablePost(userId, postId);
+        validatePostImage(file);
+
+        List<PostPhoto> existingPhotos = postPhotoRepository.findAllByPostIdOrderByUploadedAtAsc(postId);
+        if (existingPhotos.size() >= MAX_POST_PHOTOS) {
+            throw new ConflictException("A post can have at most 5 photos");
+        }
+
+        PostPhoto postPhoto = new PostPhoto();
+        postPhoto.setPostId(postId);
+        postPhoto.setFilePath(fileStorageService.storePostPhoto(postId, file));
+        postPhotoRepository.save(postPhoto);
+
+        return toDetailResponse(post);
+    }
+
+    @Override
+    public void deletePostPhoto(UUID userId, UUID postId, UUID photoId) {
+        getOwnedEditablePost(userId, postId);
+
+        PostPhoto postPhoto = postPhotoRepository.findByIdAndPostId(photoId, postId)
+                .orElseThrow(() -> new NotFoundException("Post photo not found"));
+
+        postPhotoRepository.delete(postPhoto);
+    }
+
+    @Override
+    public ServicePostDetailResponse updatePostStatus(UUID userId, UUID postId, UpdatePostStatusRequest request) {
+        ServicePost post = getOwnedPost(userId, postId);
+
+        if (post.getStatus() == request.status()) {
+            return toDetailResponse(post);
+        }
+
+        validateStatusTransition(post, request.status());
+        post.setStatus(request.status());
+
+        return toDetailResponse(post);
     }
 
     @Override
@@ -124,7 +180,7 @@ public class ServicePostServiceImpl implements ServicePostService {
                 .orElseThrow(() -> new NotFoundException("User not found"));
     }
 
-    private ServicePost getOwnedEditablePost(UUID userId, UUID postId) {
+    private ServicePost getOwnedPost(UUID userId, UUID postId) {
         ServicePost post = servicePostRepository.findByIdAndDeletedAtIsNull(postId)
                 .orElseThrow(() -> new NotFoundException("Post not found"));
 
@@ -132,6 +188,11 @@ public class ServicePostServiceImpl implements ServicePostService {
             throw new ForbiddenException("You can only modify your own posts");
         }
 
+        return post;
+    }
+
+    private ServicePost getOwnedEditablePost(UUID userId, UUID postId) {
+        ServicePost post = getOwnedPost(userId, postId);
         validateEditableStatus(post);
         return post;
     }
@@ -145,6 +206,59 @@ public class ServicePostServiceImpl implements ServicePostService {
                 && post.getStatus() != PostStatus.OFFERING
                 && post.getStatus() != PostStatus.UNAVAILABLE) {
             throw new ConflictException("This offer can no longer be modified");
+        }
+    }
+
+    private void validateStatusTransition(ServicePost post, PostStatus nextStatus) {
+        if (post.getPostType() == PostType.SERVICE_REQUEST) {
+            validateRequestStatusTransition(post.getStatus(), nextStatus);
+            return;
+        }
+
+        validateOfferStatusTransition(post.getStatus(), nextStatus);
+    }
+
+    private void validateRequestStatusTransition(PostStatus currentStatus, PostStatus nextStatus) {
+        boolean allowed =
+                (currentStatus == PostStatus.REQUESTING
+                        && (nextStatus == PostStatus.SERVICE_ACCEPTED || nextStatus == PostStatus.CANCELLED))
+                        || (currentStatus == PostStatus.SERVICE_ACCEPTED
+                        && (nextStatus == PostStatus.SERVICE_DONE || nextStatus == PostStatus.CANCELLED));
+
+        if (!allowed) {
+            throw new ConflictException("Invalid status transition for service request");
+        }
+    }
+
+    private void validateOfferStatusTransition(PostStatus currentStatus, PostStatus nextStatus) {
+        boolean allowed =
+                (currentStatus == PostStatus.OFFERING
+                        && (nextStatus == PostStatus.UNAVAILABLE || nextStatus == PostStatus.CLOSED))
+                        || (currentStatus == PostStatus.UNAVAILABLE
+                        && (nextStatus == PostStatus.OFFERING || nextStatus == PostStatus.CLOSED));
+
+        if (!allowed) {
+            throw new ConflictException("Invalid status transition for service offer");
+        }
+    }
+
+    private void validatePostImage(MultipartFile file) {
+        if (file == null || file.isEmpty()) {
+            throw new IllegalArgumentException("Post photo is required");
+        }
+
+        if (file.getSize() > MAX_IMAGE_SIZE_BYTES) {
+            throw new IllegalArgumentException("Post photo must be 5 MB or smaller");
+        }
+
+        String contentType = file.getContentType();
+        if (contentType == null) {
+            throw new IllegalArgumentException("Post photo type is missing");
+        }
+
+        String normalized = contentType.toLowerCase(Locale.ROOT);
+        if (!normalized.equals("image/jpeg") && !normalized.equals("image/png") && !normalized.equals("image/webp")) {
+            throw new IllegalArgumentException("Post photo must be a JPG, PNG, or WEBP image");
         }
     }
 
@@ -196,6 +310,11 @@ public class ServicePostServiceImpl implements ServicePostService {
     }
 
     private ServicePostDetailResponse toDetailResponse(ServicePost post) {
+        List<PostPhotoResponse> photos = postPhotoRepository.findAllByPostIdOrderByUploadedAtAsc(post.getId())
+                .stream()
+                .map(photo -> new PostPhotoResponse(photo.getId(), photo.getFilePath(), photo.getUploadedAt()))
+                .toList();
+
         return new ServicePostDetailResponse(
                 post.getId(),
                 post.getUserId(),
@@ -211,7 +330,8 @@ public class ServicePostServiceImpl implements ServicePostService {
                 post.getContactEmail(),
                 post.getAcceptedUserId(),
                 post.getCreatedAt(),
-                post.getUpdatedAt()
+                post.getUpdatedAt(),
+                photos
         );
     }
 

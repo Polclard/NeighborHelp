@@ -5,6 +5,7 @@ import com.neighborhelp.model.PostType;
 
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
+import java.util.List;
 import java.util.UUID;
 
 public record ServicePostDetailResponse(
@@ -22,6 +23,7 @@ public record ServicePostDetailResponse(
         String contactEmail,
         UUID acceptedUserId,
         OffsetDateTime createdAt,
-        OffsetDateTime updatedAt
+        OffsetDateTime updatedAt,
+        List<PostPhotoResponse> photos
 ) {
 }
