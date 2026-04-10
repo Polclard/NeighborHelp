@@ -544,6 +544,42 @@ GET {{baseUrl}}/api/profiles/{{userBId}}/reviews
 ### Profiles - Public profile for helper should show updated rating
 GET {{baseUrl}}/api/profiles/{{userBId}}
 
+### Conversations - Create or reuse conversation about offer post
+POST {{baseUrl}}/api/conversations
+Authorization: Bearer {{userBAccessToken}}
+Content-Type: {{json}}
+
+{
+  "recipientUserId": "{{userAId}}",
+  "postId": "{{offerPostId}}"
+}
+
+> {%
+    client.global.set("conversationId", response.body.id);
+%}
+
+### Conversations - Duplicate create should return the same conversation
+POST {{baseUrl}}/api/conversations
+Authorization: Bearer {{userBAccessToken}}
+Content-Type: {{json}}
+
+{
+  "recipientUserId": "{{userAId}}",
+  "postId": "{{offerPostId}}"
+}
+
+### Conversations - User B list conversations
+GET {{baseUrl}}/api/conversations
+Authorization: Bearer {{userBAccessToken}}
+
+### Conversations - User A list conversations
+GET {{baseUrl}}/api/conversations
+Authorization: Bearer {{userAAccessToken}}
+
+### Conversations - Empty message history page
+GET {{baseUrl}}/api/conversations/{{conversationId}}/messages?page=0&size=20
+Authorization: Bearer {{userAAccessToken}}
+
 ### Auth - Logout user A
 # @name logoutUserA
 POST {{baseUrl}}/api/auth/logout
