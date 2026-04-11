@@ -1,6 +1,7 @@
 package com.neighborhelp.service.impl;
 
 import com.neighborhelp.dto.post.CreateServicePostRequest;
+import com.neighborhelp.dto.post.PostMarkerResponse;
 import com.neighborhelp.dto.post.PostPhotoResponse;
 import com.neighborhelp.dto.post.ServicePostDetailResponse;
 import com.neighborhelp.dto.post.ServicePostSummaryResponse;
@@ -24,6 +25,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Locale;
@@ -36,6 +38,7 @@ public class ServicePostServiceImpl implements ServicePostService {
 
     private static final int MAX_POST_PHOTOS = 5;
     private static final long MAX_IMAGE_SIZE_BYTES = 5 * 1024 * 1024;
+    private static final double EARTH_RADIUS_KM = 6371.0;
 
     private final ServicePostRepository servicePostRepository;
     private final UserRepository userRepository;
@@ -135,47 +138,6 @@ public class ServicePostServiceImpl implements ServicePostService {
     }
 
     @Override
-    public ServicePostDetailResponse updatePostStatus(UUID userId, UUID postId, UpdatePostStatusRequest request) {
-        ServicePost post = getOwnedPost(userId, postId);
-
-        if (post.getStatus() == request.status()) {
-            return toDetailResponse(post);
-        }
-
-        validateStatusTransition(post, request.status());
-        post.setStatus(request.status());
-
-        return toDetailResponse(post);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public List<ServicePostSummaryResponse> getPublicPosts() {
-        return servicePostRepository.findAllByDeletedAtIsNullOrderByCreatedAtDesc()
-                .stream()
-                .map(this::toSummaryResponse)
-                .toList();
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public List<ServicePostSummaryResponse> getOwnPosts(UUID userId) {
-        return servicePostRepository.findAllByUserIdAndDeletedAtIsNullOrderByCreatedAtDesc(userId)
-                .stream()
-                .map(this::toSummaryResponse)
-                .toList();
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public ServicePostDetailResponse getPostById(UUID postId) {
-        ServicePost post = servicePostRepository.findByIdAndDeletedAtIsNull(postId)
-                .orElseThrow(() -> new NotFoundException("Post not found"));
-
-        return toDetailResponse(post);
-    }
-
-    @Override
     public ServicePostDetailResponse acceptRequest(UUID helperUserId, UUID postId) {
         User helper = getActiveUser(helperUserId);
 
@@ -202,6 +164,181 @@ public class ServicePostServiceImpl implements ServicePostService {
         post.setStatus(PostStatus.SERVICE_ACCEPTED);
 
         return toDetailResponse(post);
+    }
+
+    @Override
+    public ServicePostDetailResponse updatePostStatus(UUID userId, UUID postId, UpdatePostStatusRequest request) {
+        ServicePost post = getOwnedPost(userId, postId);
+
+        if (post.getStatus() == request.status()) {
+            return toDetailResponse(post);
+        }
+
+        validateStatusTransition(post, request.status());
+        post.setStatus(request.status());
+
+        return toDetailResponse(post);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<ServicePostSummaryResponse> getPublicPosts(
+            PostType postType,
+            PostStatus status,
+            String category,
+            BigDecimal latitude,
+            BigDecimal longitude,
+            Double radiusKm
+    ) {
+        return filterAndMapPosts(null, postType, status, category, latitude, longitude, radiusKm)
+                .stream()
+                .map(this::toSummaryResponse)
+                .toList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<ServicePostSummaryResponse> searchPublicPosts(
+            String keyword,
+            PostType postType,
+            PostStatus status,
+            String category,
+            BigDecimal latitude,
+            BigDecimal longitude,
+            Double radiusKm
+    ) {
+        return filterAndMapPosts(keyword, postType, status, category, latitude, longitude, radiusKm)
+                .stream()
+                .map(this::toSummaryResponse)
+                .toList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<PostMarkerResponse> getPostMarkers(
+            String keyword,
+            PostType postType,
+            PostStatus status,
+            String category,
+            BigDecimal latitude,
+            BigDecimal longitude,
+            Double radiusKm
+    ) {
+        return filterAndMapPosts(keyword, postType, status, category, latitude, longitude, radiusKm)
+                .stream()
+                .map(post -> new PostMarkerResponse(
+                        post.getId(),
+                        post.getTitle(),
+                        post.getPostType(),
+                        post.getStatus(),
+                        post.getCategory(),
+                        post.getLatitude(),
+                        post.getLongitude()
+                ))
+                .toList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<ServicePostSummaryResponse> getOwnPosts(UUID userId) {
+        return servicePostRepository.findAllByUserIdAndDeletedAtIsNullOrderByCreatedAtDesc(userId)
+                .stream()
+                .map(this::toSummaryResponse)
+                .toList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public ServicePostDetailResponse getPostById(UUID postId) {
+        ServicePost post = servicePostRepository.findByIdAndDeletedAtIsNull(postId)
+                .orElseThrow(() -> new NotFoundException("Post not found"));
+
+        return toDetailResponse(post);
+    }
+
+    private List<ServicePost> filterAndMapPosts(
+            String keyword,
+            PostType postType,
+            PostStatus status,
+            String category,
+            BigDecimal latitude,
+            BigDecimal longitude,
+            Double radiusKm
+    ) {
+        validateLocationFilter(latitude, longitude, radiusKm);
+
+        String normalizedCategory = normalizeNullable(category);
+        if (normalizedCategory != null) {
+            normalizedCategory = normalizedCategory.toLowerCase(Locale.ROOT);
+        }
+
+        String keywordPattern = normalizeNullable(keyword);
+        if (keywordPattern != null) {
+            keywordPattern = "%" + keywordPattern.toLowerCase(Locale.ROOT) + "%";
+        }
+
+        List<ServicePost> posts = servicePostRepository.findPublicPostsByFilters(
+                postType,
+                status,
+                normalizedCategory,
+                keywordPattern
+        );
+
+        if (latitude == null || longitude == null || radiusKm == null) {
+            return posts;
+        }
+
+        double centerLat = latitude.doubleValue();
+        double centerLng = longitude.doubleValue();
+
+        return posts.stream()
+                .filter(post -> isWithinRadius(post, centerLat, centerLng, radiusKm))
+                .toList();
+    }
+
+    private void validateLocationFilter(BigDecimal latitude, BigDecimal longitude, Double radiusKm) {
+        boolean hasLatitude = latitude != null;
+        boolean hasLongitude = longitude != null;
+        boolean hasRadius = radiusKm != null;
+
+        if (hasLatitude != hasLongitude) {
+            throw new IllegalArgumentException("Latitude and longitude must be provided together");
+        }
+
+        if ((hasLatitude || hasLongitude) && !hasRadius) {
+            throw new IllegalArgumentException("radiusKm is required when latitude/longitude are provided");
+        }
+
+        if (hasRadius && (!hasLatitude || !hasLongitude)) {
+            throw new IllegalArgumentException("Latitude and longitude are required when radiusKm is provided");
+        }
+
+        if (hasRadius && radiusKm <= 0) {
+            throw new IllegalArgumentException("radiusKm must be greater than 0");
+        }
+    }
+
+    private boolean isWithinRadius(ServicePost post, double centerLat, double centerLng, double radiusKm) {
+        double distance = haversineKm(
+                centerLat,
+                centerLng,
+                post.getLatitude().doubleValue(),
+                post.getLongitude().doubleValue()
+        );
+
+        return distance <= radiusKm;
+    }
+
+    private double haversineKm(double lat1, double lon1, double lat2, double lon2) {
+        double latDistance = Math.toRadians(lat2 - lat1);
+        double lonDistance = Math.toRadians(lon2 - lon1);
+
+        double a = Math.sin(latDistance / 2) * Math.sin(latDistance / 2)
+                + Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2))
+                * Math.sin(lonDistance / 2) * Math.sin(lonDistance / 2);
+
+        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        return EARTH_RADIUS_KM * c;
     }
 
     private User getActiveUser(UUID userId) {
@@ -295,8 +432,8 @@ public class ServicePostServiceImpl implements ServicePostService {
             String title,
             String description,
             String category,
-            java.math.BigDecimal latitude,
-            java.math.BigDecimal longitude,
+            BigDecimal latitude,
+            BigDecimal longitude,
             String addressLabel,
             String contactPhone,
             String contactEmail,

@@ -580,6 +580,24 @@ Authorization: Bearer {{userAAccessToken}}
 GET {{baseUrl}}/api/conversations/{{conversationId}}/messages?page=0&size=20
 Authorization: Bearer {{userAAccessToken}}
 
+### Posts - Filter by type and status
+GET {{baseUrl}}/api/posts?postType=SERVICE_OFFER&status=OFFERING
+
+### Posts - Filter by category
+GET {{baseUrl}}/api/posts?category=Moving
+
+### Posts - Search by keyword
+GET {{baseUrl}}/api/posts/search?keyword=lift
+
+### Posts - Marker query
+GET {{baseUrl}}/api/posts/markers?postType=SERVICE_OFFER
+
+### Posts - Radius query
+GET {{baseUrl}}/api/posts?latitude=41.9981&longitude=21.4254&radiusKm=5
+
+### Posts - Invalid radius query should return 400
+GET {{baseUrl}}/api/posts?latitude=41.9981&radiusKm=5
+
 ### Auth - Logout user A
 # @name logoutUserA
 POST {{baseUrl}}/api/auth/logout
