@@ -1,10 +1,13 @@
 package com.neighborhelp.controller;
 
 import com.neighborhelp.dto.post.CreateServicePostRequest;
+import com.neighborhelp.dto.post.PostMarkerResponse;
 import com.neighborhelp.dto.post.ServicePostDetailResponse;
 import com.neighborhelp.dto.post.ServicePostSummaryResponse;
 import com.neighborhelp.dto.post.UpdatePostStatusRequest;
 import com.neighborhelp.dto.post.UpdateServicePostRequest;
+import com.neighborhelp.model.PostStatus;
+import com.neighborhelp.model.PostType;
 import com.neighborhelp.security.AuthenticatedUser;
 import com.neighborhelp.service.ServicePostService;
 import jakarta.validation.Valid;
@@ -23,6 +26,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
 
@@ -103,8 +107,57 @@ public class ServicePostController {
     }
 
     @GetMapping("/api/posts")
-    public List<ServicePostSummaryResponse> getPublicPosts() {
-        return servicePostService.getPublicPosts();
+    public List<ServicePostSummaryResponse> getPublicPosts(
+            @RequestParam(required = false) PostType postType,
+            @RequestParam(required = false) PostStatus status,
+            @RequestParam(required = false) String category,
+            @RequestParam(required = false) BigDecimal latitude,
+            @RequestParam(required = false) BigDecimal longitude,
+            @RequestParam(required = false) Double radiusKm
+    ) {
+        return servicePostService.getPublicPosts(postType, status, category, latitude, longitude, radiusKm);
+    }
+
+    @GetMapping("/api/posts/search")
+    public List<ServicePostSummaryResponse> searchPublicPosts(
+            @RequestParam String keyword,
+            @RequestParam(required = false) PostType postType,
+            @RequestParam(required = false) PostStatus status,
+            @RequestParam(required = false) String category,
+            @RequestParam(required = false) BigDecimal latitude,
+            @RequestParam(required = false) BigDecimal longitude,
+            @RequestParam(required = false) Double radiusKm
+    ) {
+        return servicePostService.searchPublicPosts(
+                keyword,
+                postType,
+                status,
+                category,
+                latitude,
+                longitude,
+                radiusKm
+        );
+    }
+
+    @GetMapping("/api/posts/markers")
+    public List<PostMarkerResponse> getPostMarkers(
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) PostType postType,
+            @RequestParam(required = false) PostStatus status,
+            @RequestParam(required = false) String category,
+            @RequestParam(required = false) BigDecimal latitude,
+            @RequestParam(required = false) BigDecimal longitude,
+            @RequestParam(required = false) Double radiusKm
+    ) {
+        return servicePostService.getPostMarkers(
+                keyword,
+                postType,
+                status,
+                category,
+                latitude,
+                longitude,
+                radiusKm
+        );
     }
 
     @GetMapping("/api/posts/{postId}")
