@@ -35,8 +35,8 @@ public class SecurityConfig {
     private String allowedOrigins;
 
     public SecurityConfig(
-        RestAuthenticationEntryPoint restAuthenticationEntryPoint,
-        RestAccessDeniedHandler restAccessDeniedHandler
+            RestAuthenticationEntryPoint restAuthenticationEntryPoint,
+            RestAccessDeniedHandler restAccessDeniedHandler
     ) {
         this.restAuthenticationEntryPoint = restAuthenticationEntryPoint;
         this.restAccessDeniedHandler = restAccessDeniedHandler;
@@ -44,8 +44,8 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(
-        HttpSecurity http,
-        ObjectProvider<JwtAuthenticationFilter> jwtAuthenticationFilterProvider
+            HttpSecurity http,
+            ObjectProvider<JwtAuthenticationFilter> jwtAuthenticationFilterProvider
     ) throws Exception {
         http
                 .csrf(AbstractHttpConfigurer::disable)
@@ -61,6 +61,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
+                        .requestMatchers("/ws/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/posts/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/uploads/**").permitAll()
                         .requestMatchers("/error").permitAll()
