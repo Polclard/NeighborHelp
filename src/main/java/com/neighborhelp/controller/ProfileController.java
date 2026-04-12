@@ -7,7 +7,6 @@ import com.neighborhelp.dto.profile.UserReviewResponse;
 import com.neighborhelp.security.AuthenticatedUser;
 import com.neighborhelp.service.ProfileService;
 import jakarta.validation.Valid;
-import org.springframework.context.annotation.Profile;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -23,7 +22,6 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
-@Profile("!test")
 public class ProfileController {
 
     private final ProfileService profileService;

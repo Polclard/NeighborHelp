@@ -6,7 +6,6 @@ import com.neighborhelp.dto.admin.AdminUserResponse;
 import com.neighborhelp.dto.post.ServicePostSummaryResponse;
 import com.neighborhelp.security.AuthenticatedUser;
 import com.neighborhelp.service.AdminService;
-import org.springframework.context.annotation.Profile;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
@@ -20,7 +19,6 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
-@Profile("!test")
 @PreAuthorize("hasAuthority('ROLE_ADMIN')")
 public class AdminController {
 

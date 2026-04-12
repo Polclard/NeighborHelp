@@ -58,7 +58,7 @@ public class GlobalExceptionHandler {
         Map<String, String> validationErrors = new LinkedHashMap<>();
 
         exception.getConstraintViolations().forEach(violation ->
-            validationErrors.put(violation.getPropertyPath().toString(), violation.getMessage())
+            validationErrors.put(extractConstraintField(violation.getPropertyPath().toString()), violation.getMessage())
         );
 
         return new ApiErrorResponse(
@@ -226,5 +226,14 @@ public class GlobalExceptionHandler {
             request.getRequestURI(),
             Map.of()
         );
+    }
+
+    private String extractConstraintField(String propertyPath) {
+        int lastDotIndex = propertyPath.lastIndexOf('.');
+        if (lastDotIndex >= 0 && lastDotIndex + 1 < propertyPath.length()) {
+            return propertyPath.substring(lastDotIndex + 1);
+        }
+
+        return propertyPath;
     }
 }

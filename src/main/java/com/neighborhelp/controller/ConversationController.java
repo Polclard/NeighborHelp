@@ -8,7 +8,6 @@ import com.neighborhelp.service.ConversationService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
-import org.springframework.context.annotation.Profile;
 import org.springframework.security.core.Authentication;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -23,7 +22,6 @@ import java.util.UUID;
 
 @RestController
 @Validated
-@Profile("!test")
 public class ConversationController {
 
     private final ConversationService conversationService;
@@ -51,8 +49,10 @@ public class ConversationController {
     public MessagePageResponse getConversationMessages(
             Authentication authentication,
             @PathVariable UUID conversationId,
-            @RequestParam(defaultValue = "0") @Min(0) int page,
-            @RequestParam(defaultValue = "20") @Min(1) @Max(100) int size
+            @RequestParam(defaultValue = "0") @Min(value = 0, message = "Page must be 0 or greater") int page,
+            @RequestParam(defaultValue = "20")
+            @Min(value = 1, message = "Size must be between 1 and 100")
+            @Max(value = 100, message = "Size must be between 1 and 100") int size
     ) {
         AuthenticatedUser user = (AuthenticatedUser) authentication.getPrincipal();
         return conversationService.getConversationMessages(user.getId(), conversationId, page, size);

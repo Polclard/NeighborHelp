@@ -20,7 +20,8 @@ import com.neighborhelp.repository.ServicePostRepository;
 import com.neighborhelp.repository.UserRepository;
 import com.neighborhelp.service.FileStorageService;
 import com.neighborhelp.service.ServicePostService;
-import org.springframework.context.annotation.Profile;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -33,12 +34,12 @@ import java.util.UUID;
 
 @Service
 @Transactional
-@Profile("!test")
 public class ServicePostServiceImpl implements ServicePostService {
 
     private static final int MAX_POST_PHOTOS = 5;
     private static final long MAX_IMAGE_SIZE_BYTES = 5 * 1024 * 1024;
     private static final double EARTH_RADIUS_KM = 6371.0;
+    private static final Logger log = LoggerFactory.getLogger(ServicePostServiceImpl.class);
 
     private final ServicePostRepository servicePostRepository;
     private final UserRepository userRepository;
@@ -135,6 +136,7 @@ public class ServicePostServiceImpl implements ServicePostService {
                 .orElseThrow(() -> new NotFoundException("Post photo not found"));
 
         postPhotoRepository.delete(postPhoto);
+        deleteStoredFileQuietly(postPhoto.getFilePath());
     }
 
     @Override
@@ -512,5 +514,17 @@ public class ServicePostServiceImpl implements ServicePostService {
     private String normalizeEmailOrNull(String value) {
         String normalized = normalizeNullable(value);
         return normalized == null ? null : normalized.toLowerCase(Locale.ROOT);
+    }
+
+    private void deleteStoredFileQuietly(String storedPath) {
+        if (storedPath == null || storedPath.isBlank()) {
+            return;
+        }
+
+        try {
+            fileStorageService.deleteStoredFile(storedPath);
+        } catch (RuntimeException exception) {
+            log.warn("Failed to delete stored post photo {}", storedPath, exception);
+        }
     }
 }

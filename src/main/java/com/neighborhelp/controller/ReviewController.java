@@ -5,7 +5,6 @@ import com.neighborhelp.dto.review.ReviewResponse;
 import com.neighborhelp.security.AuthenticatedUser;
 import com.neighborhelp.service.ReviewService;
 import jakarta.validation.Valid;
-import org.springframework.context.annotation.Profile;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -17,7 +16,6 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.UUID;
 
 @RestController
-@Profile("!test")
 public class ReviewController {
 
     private final ReviewService reviewService;
