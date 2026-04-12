@@ -19,6 +19,8 @@ public interface ServicePostRepository extends JpaRepository<ServicePost, UUID> 
 
     List<ServicePost> findAllByUserIdAndDeletedAtIsNullOrderByCreatedAtDesc(UUID userId);
 
+    long countByDeletedAtIsNull();
+
     @Query("""
                 select p
                 from ServicePost p
