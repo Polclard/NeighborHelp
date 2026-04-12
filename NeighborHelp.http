@@ -598,6 +598,122 @@ GET {{baseUrl}}/api/posts?latitude=41.9981&longitude=21.4254&radiusKm=5
 ### Posts - Invalid radius query should return 400
 GET {{baseUrl}}/api/posts?latitude=41.9981&radiusKm=5
 
+### Admin - Login as seeded admin
+POST {{baseUrl}}/api/auth/login
+Content-Type: {{json}}
+
+{
+  "email": "admin@neighborhelp.local",
+  "password": "Admin123!"
+}
+
+> {%
+    client.global.set("adminAccessToken", response.body.accessToken);
+%}
+
+### Admin - Dashboard stats
+GET {{baseUrl}}/api/admin/dashboard
+Authorization: Bearer {{adminAccessToken}}
+
+### Admin - List users
+GET {{baseUrl}}/api/admin/users
+Authorization: Bearer {{adminAccessToken}}
+
+### Admin - Ban user B
+PATCH {{baseUrl}}/api/admin/users/{{userBId}}/ban
+Authorization: Bearer {{adminAccessToken}}
+
+### Admin - Unban user B
+PATCH {{baseUrl}}/api/admin/users/{{userBId}}/unban
+Authorization: Bearer {{adminAccessToken}}
+
+### Admin - Non-admin dashboard access should return 403
+GET {{baseUrl}}/api/admin/dashboard
+Authorization: Bearer {{userAAccessToken}}
+
+### Reports - Report offer post
+POST {{baseUrl}}/api/posts/{{offerPostId}}/report
+Authorization: Bearer {{userBAccessToken}}
+Content-Type: {{json}}
+
+{
+  "reason": "Spam or misleading content"
+}
+
+> {%
+    client.global.set("postReportId", response.body.id);
+%}
+
+### Reports - Duplicate post report should return 409
+POST {{baseUrl}}/api/posts/{{offerPostId}}/report
+Authorization: Bearer {{userBAccessToken}}
+Content-Type: {{json}}
+
+{
+  "reason": "Spam or misleading content"
+}
+
+### Reports - Report review
+POST {{baseUrl}}/api/reviews/{{reviewId}}/report
+Authorization: Bearer {{userBAccessToken}}
+Content-Type: {{json}}
+
+{
+  "reason": "Abusive review text"
+}
+
+> {%
+    client.global.set("reviewReportId", response.body.id);
+%}
+
+### Admin - List open reports
+GET {{baseUrl}}/api/admin/reports
+Authorization: Bearer {{adminAccessToken}}
+
+### Admin - Resolve post report
+PATCH {{baseUrl}}/api/admin/reports/{{postReportId}}/resolve
+Authorization: Bearer {{adminAccessToken}}
+
+### Admin - Non-admin reports access should return 403
+GET {{baseUrl}}/api/admin/reports
+Authorization: Bearer {{userAAccessToken}}
+
+### Posts - Create admin moderation target post
+POST {{baseUrl}}/api/posts
+Authorization: Bearer {{userBAccessToken}}
+Content-Type: {{json}}
+
+{
+  "title": "Admin moderation target",
+  "description": "Temporary post for admin delete flow",
+  "postType": "SERVICE_OFFER",
+  "category": "Moving",
+  "latitude": 41.9981,
+  "longitude": 21.4254,
+  "addressLabel": "Centar",
+  "contactPhone": "+38970123456",
+  "contactEmail": "{{userBEmail}}"
+}
+
+> {%
+    client.global.set("adminManagedPostId", response.body.id);
+%}
+
+### Admin - List posts
+GET {{baseUrl}}/api/admin/posts
+Authorization: Bearer {{adminAccessToken}}
+
+### Admin - Delete post
+DELETE {{baseUrl}}/api/admin/posts/{{adminManagedPostId}}
+Authorization: Bearer {{adminAccessToken}}
+
+### Admin - Non-admin delete post should return 403
+DELETE {{baseUrl}}/api/admin/posts/{{offerPostId}}
+Authorization: Bearer {{userAAccessToken}}
+
+### Posts - Deleted admin-managed post should return 404
+GET {{baseUrl}}/api/posts/{{adminManagedPostId}}
+
 ### Auth - Logout user A
 # @name logoutUserA
 POST {{baseUrl}}/api/auth/logout
