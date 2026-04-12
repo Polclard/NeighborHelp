@@ -11,7 +11,8 @@ import com.neighborhelp.repository.ReviewRepository;
 import com.neighborhelp.repository.UserRepository;
 import com.neighborhelp.service.FileStorageService;
 import com.neighborhelp.service.ProfileService;
-import org.springframework.context.annotation.Profile;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -24,10 +25,10 @@ import java.util.UUID;
 
 @Service
 @Transactional
-@Profile("!test")
 public class ProfileServiceImpl implements ProfileService {
 
     private static final long MAX_AVATAR_SIZE_BYTES = 5 * 1024 * 1024;
+    private static final Logger log = LoggerFactory.getLogger(ProfileServiceImpl.class);
 
     private final UserRepository userRepository;
     private final ReviewRepository reviewRepository;
@@ -64,7 +65,11 @@ public class ProfileServiceImpl implements ProfileService {
     public OwnProfileResponse uploadAvatar(UUID userId, MultipartFile file) {
         User user = getActiveUser(userId);
         validateAvatar(file);
+
+        String previousAvatar = user.getProfilePicture();
         user.setProfilePicture(fileStorageService.storeProfileAvatar(userId, file));
+        deleteStoredFileQuietly(previousAvatar);
+
         return toOwnProfileResponse(user);
     }
 
@@ -162,6 +167,18 @@ public class ProfileServiceImpl implements ProfileService {
                 && !normalizedContentType.equals("image/png")
                 && !normalizedContentType.equals("image/webp")) {
             throw new IllegalArgumentException("Avatar must be a JPG, PNG, or WEBP image");
+        }
+    }
+
+    private void deleteStoredFileQuietly(String storedPath) {
+        if (storedPath == null || storedPath.isBlank()) {
+            return;
+        }
+
+        try {
+            fileStorageService.deleteStoredFile(storedPath);
+        } catch (RuntimeException exception) {
+            log.warn("Failed to delete stored avatar {}", storedPath, exception);
         }
     }
 }

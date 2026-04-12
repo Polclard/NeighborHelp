@@ -4,7 +4,7 @@ import com.neighborhelp.model.PostStatus;
 import jakarta.validation.constraints.NotNull;
 
 public record UpdatePostStatusRequest(
-        @NotNull
+        @NotNull(message = "Status is required")
         PostStatus status
 ) {
 }

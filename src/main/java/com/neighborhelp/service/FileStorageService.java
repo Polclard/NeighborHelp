@@ -9,4 +9,6 @@ public interface FileStorageService {
     String storeProfileAvatar(UUID userId, MultipartFile file);
 
     String storePostPhoto(UUID postId, MultipartFile file);
+
+    void deleteStoredFile(String storedPath);
 }

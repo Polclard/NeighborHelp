@@ -16,7 +16,6 @@ import com.neighborhelp.repository.MessageRepository;
 import com.neighborhelp.repository.ServicePostRepository;
 import com.neighborhelp.repository.UserRepository;
 import com.neighborhelp.service.ConversationService;
-import org.springframework.context.annotation.Profile;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -27,7 +26,6 @@ import java.util.UUID;
 
 @Service
 @Transactional
-@Profile("!test")
 public class ConversationServiceImpl implements ConversationService {
 
     private static final int MAX_PAGE_SIZE = 100;

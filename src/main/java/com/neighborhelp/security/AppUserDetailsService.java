@@ -2,14 +2,12 @@ package com.neighborhelp.security;
 
 import com.neighborhelp.model.User;
 import com.neighborhelp.repository.UserRepository;
-import org.springframework.context.annotation.Profile;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 @Service
-@Profile("!test")
 public class AppUserDetailsService implements UserDetailsService {
 
     private final UserRepository userRepository;

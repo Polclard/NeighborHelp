@@ -10,7 +10,6 @@ import com.neighborhelp.dto.auth.RegisterRequest;
 import com.neighborhelp.service.AuthService;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
-import org.springframework.context.annotation.Profile;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
@@ -24,7 +23,6 @@ import org.springframework.web.bind.annotation.RestController;
 import java.time.Duration;
 
 @RestController
-@Profile("!test")
 @RequestMapping("/api/auth")
 public class AuthController {
 
@@ -47,7 +45,7 @@ public class AuthController {
         addRefreshTokenCookie(response, tokens.refreshToken());
 
         return ResponseEntity
-            .status(HttpStatus.CREATED)
+                .status(HttpStatus.CREATED)
                 .body(toResponse(tokens));
     }
 
@@ -86,16 +84,16 @@ public class AuthController {
 
     private AuthResponse toResponse(AuthTokens tokens) {
         return new AuthResponse(
-            tokens.accessToken(),
-            "Bearer",
-            tokens.expiresIn(),
-            new AuthUserResponse(
-                tokens.userId(),
-                tokens.firstName(),
-                tokens.lastName(),
-                tokens.email(),
-                tokens.role()
-            )
+                tokens.accessToken(),
+                "Bearer",
+                tokens.expiresIn(),
+                new AuthUserResponse(
+                        tokens.userId(),
+                        tokens.firstName(),
+                        tokens.lastName(),
+                        tokens.email(),
+                        tokens.role()
+                )
         );
     }
 

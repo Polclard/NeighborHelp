@@ -5,7 +5,7 @@ import jakarta.validation.constraints.NotNull;
 import java.util.UUID;
 
 public record CreateConversationRequest(
-        @NotNull
+        @NotNull(message = "Recipient user id is required")
         UUID recipientUserId,
 
         UUID postId

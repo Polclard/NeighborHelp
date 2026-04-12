@@ -11,7 +11,6 @@ import com.neighborhelp.model.PostType;
 import com.neighborhelp.security.AuthenticatedUser;
 import com.neighborhelp.service.ServicePostService;
 import jakarta.validation.Valid;
-import org.springframework.context.annotation.Profile;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -31,7 +30,6 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
-@Profile("!test")
 public class ServicePostController {
 
     private final ServicePostService servicePostService;

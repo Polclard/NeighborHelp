@@ -15,7 +15,6 @@ import com.neighborhelp.repository.UserRepository;
 import com.neighborhelp.security.JwtService;
 import com.neighborhelp.service.AuthService;
 import jakarta.transaction.Transactional;
-import org.springframework.context.annotation.Profile;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -25,7 +24,6 @@ import java.util.UUID;
 
 @Service
 @Transactional
-@Profile("!test")
 public class AuthServiceImpl implements AuthService {
 
     private final UserRepository userRepository;
@@ -44,12 +42,12 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public AuthTokens register(RegisterRequest request) {
-        if(!request.password().equals(request.confirmPassword())){
+        if (!request.password().equals(request.confirmPassword())) {
             throw new IllegalArgumentException("Passwords do not match");
         }
 
         String email = normalizeEmail(request.email());
-        if(userRepository.existsByEmailIgnoreCase(email)){
+        if (userRepository.existsByEmailIgnoreCase(email)) {
             throw new ConflictException("Email is already registered");
         }
 
@@ -71,11 +69,11 @@ public class AuthServiceImpl implements AuthService {
         String email = normalizeEmail(request.email());
 
         User user = userRepository.findByEmailIgnoreCaseAndDeletedAtIsNull(email)
-            .orElseThrow(() -> new UnauthorizedException("Invalid email or password"));
+                .orElseThrow(() -> new UnauthorizedException("Invalid email or password"));
 
         validateActiveUser(user);
 
-        if(!passwordEncoder.matches(request.password(), user.getPasswordHash())) {
+        if (!passwordEncoder.matches(request.password(), user.getPasswordHash())) {
             throw new UnauthorizedException("Invalid email or password");
         }
 
@@ -84,14 +82,14 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public AuthTokens refresh(String refreshTokenValue) {
-        if(refreshTokenValue == null || refreshTokenValue.isBlank()) {
+        if (refreshTokenValue == null || refreshTokenValue.isBlank()) {
             throw new UnauthorizedException("Refresh token is missing");
         }
 
         RefreshToken storedToken = refreshTokenRepository.findByTokenAndRevokedAtIsNull(refreshTokenValue)
-            .orElseThrow(() -> new UnauthorizedException("Refresh token is invalid"));
+                .orElseThrow(() -> new UnauthorizedException("Refresh token is invalid"));
 
-        if(storedToken.getExpiresAt().isBefore(OffsetDateTime.now())){
+        if (storedToken.getExpiresAt().isBefore(OffsetDateTime.now())) {
             storedToken.setRevokedAt(OffsetDateTime.now());
             throw new UnauthorizedException("Refresh token has expired");
         }
@@ -107,7 +105,7 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public void logout(String refreshTokenValue) {
-        if(refreshTokenValue == null || refreshTokenValue.isBlank()) {
+        if (refreshTokenValue == null || refreshTokenValue.isBlank()) {
             return;
         }
 
@@ -129,23 +127,23 @@ public class AuthServiceImpl implements AuthService {
         refreshTokenRepository.save(refreshToken);
 
         return new AuthTokens(
-            accessToken,
-            refreshTokenValue,
-            jwtService.getAccessTokenExpirationSeconds(),
-            user.getId(),
-            user.getFirstName(),
-            user.getLastName(),
-            user.getEmail(),
-            user.getRole()
+                accessToken,
+                refreshTokenValue,
+                jwtService.getAccessTokenExpirationSeconds(),
+                user.getId(),
+                user.getFirstName(),
+                user.getLastName(),
+                user.getEmail(),
+                user.getRole()
         );
     }
 
     private void validateActiveUser(User user) {
-        if(Boolean.TRUE.equals(user.getIsBanned())) {
+        if (Boolean.TRUE.equals(user.getIsBanned())) {
             throw new ForbiddenException("Your account has been banned");
         }
 
-        if(user.getDeletedAt() != null) {
+        if (user.getDeletedAt() != null) {
             throw new UnauthorizedException("User account is not available");
         }
     }
@@ -155,7 +153,7 @@ public class AuthServiceImpl implements AuthService {
     }
 
     private String normalizeNullable(String value) {
-        if(value == null) {
+        if (value == null) {
             return null;
         }
 
@@ -166,7 +164,7 @@ public class AuthServiceImpl implements AuthService {
     private void revokeActiveRefreshTokens(UUID userId) {
         OffsetDateTime now = OffsetDateTime.now();
         refreshTokenRepository.findAllByUserIdAndRevokedAtIsNull(userId)
-            .forEach(token -> token.setRevokedAt(now));
+                .forEach(token -> token.setRevokedAt(now));
     }
 
 }
