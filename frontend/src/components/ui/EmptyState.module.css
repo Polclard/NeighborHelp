@@ -1,0 +1,26 @@
+.state {
+  padding: 24px;
+  border-radius: var(--radius-lg);
+  background: rgba(255, 255, 255, 0.72);
+  border: 1px dashed rgba(16, 37, 31, 0.18);
+}
+
+.state h3,
+.state p {
+  margin: 0;
+}
+
+.state h3 {
+  font-size: 1.1rem;
+}
+
+.state p {
+  margin-top: 8px;
+  color: var(--ink-soft);
+  line-height: 1.6;
+}
+
+.action {
+  margin-top: 14px;
+}
+

@@ -1,0 +1,38 @@
+.field {
+  display: grid;
+  gap: 8px;
+}
+
+.label {
+  font-weight: 600;
+  color: var(--ink-strong);
+}
+
+.field :is(input, textarea, select) {
+  width: 100%;
+  padding: 14px 16px;
+  border: 1px solid var(--line-strong);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.86);
+  color: var(--ink-strong);
+}
+
+.field textarea {
+  min-height: 140px;
+  resize: vertical;
+}
+
+.help,
+.error {
+  min-height: 1.2rem;
+  font-size: 0.84rem;
+}
+
+.help {
+  color: var(--ink-soft);
+}
+
+.error {
+  color: var(--accent-strong);
+}
+

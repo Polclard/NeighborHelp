@@ -1,0 +1,35 @@
+.avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid rgba(16, 37, 31, 0.12);
+  box-shadow: 0 12px 24px rgba(16, 37, 31, 0.12);
+}
+
+.fallback {
+  background: linear-gradient(135deg, rgba(31, 111, 87, 0.95), rgba(215, 102, 47, 0.92));
+  color: #fff9f1;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+}
+
+.small {
+  width: 40px;
+  height: 40px;
+  font-size: 0.82rem;
+}
+
+.medium {
+  width: 56px;
+  height: 56px;
+  font-size: 1rem;
+}
+
+.large {
+  width: 88px;
+  height: 88px;
+  font-size: 1.35rem;
+}
+
