@@ -1,0 +1,50 @@
+.page {
+  display: grid;
+  gap: 24px;
+}
+
+.actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.copy,
+.error,
+.feedback {
+  margin: 0;
+}
+
+.copy {
+  color: var(--ink-soft);
+}
+
+.error {
+  color: var(--accent-strong);
+}
+
+.feedback {
+  color: var(--leaf);
+}
+
+.primaryAction,
+.secondaryAction {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 16px;
+  border-radius: 999px;
+  font-weight: 700;
+}
+
+.primaryAction {
+  background: linear-gradient(135deg, var(--accent), #f0b970);
+  color: #fffaf0;
+}
+
+.secondaryAction {
+  border: 1px solid rgba(16, 37, 31, 0.12);
+  background: rgba(16, 37, 31, 0.04);
+  color: var(--ink-strong);
+}
+

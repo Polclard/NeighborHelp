@@ -1,0 +1,132 @@
+.shell {
+  display: inline-grid;
+  gap: 10px;
+  min-width: 0;
+  padding: 10px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: linear-gradient(180deg, rgba(14, 24, 20, 0.86), rgba(10, 18, 15, 0.78));
+  backdrop-filter: blur(24px);
+  box-shadow: 0 26px 70px rgba(0, 0, 0, 0.28);
+  color: #f7f3ea;
+  cursor: pointer;
+  transition: width 180ms ease, border-radius 180ms ease, padding 180ms ease, transform 180ms ease;
+}
+
+.shellExpanded {
+  width: min(680px, 100%);
+  padding: 12px 14px 14px;
+  border-radius: 28px;
+  cursor: default;
+}
+
+.launcher {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+
+.field {
+  display: none;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.fieldExpanded {
+  display: flex;
+}
+
+.badge,
+.shortcut,
+.clearButton,
+.closeButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.badge {
+  padding: 10px 12px;
+  background: rgba(127, 215, 185, 0.18);
+  color: #d7fff0;
+}
+
+.launcherLabel {
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.shortcut,
+.clearButton,
+.closeButton {
+  padding: 8px 12px;
+  font-size: 0.82rem;
+}
+
+.shortcut {
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: rgba(247, 243, 234, 0.74);
+}
+
+.clearButton {
+  border: none;
+  background: rgba(255, 215, 181, 0.18);
+  color: #ffe3cb;
+  cursor: pointer;
+}
+
+.closeButton {
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: transparent;
+  color: rgba(247, 243, 234, 0.82);
+  cursor: pointer;
+}
+
+.input {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  background: transparent;
+  color: inherit;
+  font-size: 1.02rem;
+  outline: none;
+}
+
+.input::placeholder {
+  color: rgba(247, 243, 234, 0.54);
+}
+
+@media (max-width: 720px) {
+  .shell {
+    width: min(100%, 360px);
+  }
+
+  .launcher {
+    justify-content: space-between;
+  }
+
+  .launcherLabel {
+    display: none;
+  }
+
+  .fieldExpanded {
+    flex-wrap: wrap;
+  }
+
+  .input {
+    width: 100%;
+  }
+}

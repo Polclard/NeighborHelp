@@ -1,0 +1,44 @@
+.thread {
+  display: grid;
+  gap: 12px;
+  align-content: start;
+}
+
+.message {
+  max-width: min(78%, 560px);
+  padding: 14px 16px;
+  border-radius: 22px 22px 22px 8px;
+  background: rgba(255, 255, 255, 0.78);
+  border: 1px solid rgba(16, 37, 31, 0.1);
+  box-shadow: 0 12px 24px rgba(16, 37, 31, 0.06);
+}
+
+.own {
+  margin-left: auto;
+  border-radius: 22px 22px 8px 22px;
+  background: linear-gradient(135deg, rgba(31, 111, 87, 0.95), rgba(18, 65, 51, 0.94));
+  color: #f7f1e8;
+}
+
+.message p,
+.message span {
+  margin: 0;
+}
+
+.message p {
+  line-height: 1.6;
+}
+
+.message span {
+  display: block;
+  margin-top: 8px;
+  font-size: 0.8rem;
+  opacity: 0.82;
+}
+
+@media (max-width: 720px) {
+  .message {
+    max-width: 100%;
+  }
+}
+

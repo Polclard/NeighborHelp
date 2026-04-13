@@ -1,0 +1,350 @@
+.page {
+    position: relative;
+    min-height: 100vh;
+    overflow: hidden;
+    background: #dfe9e0;
+}
+
+.mapStage {
+    position: absolute;
+    inset: 0;
+    min-height: 100vh;
+    overflow: hidden;
+}
+
+.mapLayer {
+    position: absolute;
+    inset: 0;
+}
+
+.searchOverlay {
+    position: absolute;
+    top: 104px;
+    left: 50%;
+    z-index: 1121;
+    width: min(680px, calc(100% - 72px));
+    transform: translateX(-50%);
+    display: flex;
+    justify-content: center;
+}
+
+.mapLegend {
+    position: absolute;
+    left: 24px;
+    bottom: 24px;
+    z-index: 1100;
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    max-width: min(56vw, calc(100% - 72px));
+}
+
+.requestChip,
+.offerChip,
+.metaChip {
+    display: inline-flex;
+    align-items: center;
+    padding: 10px 14px;
+    border-radius: 999px;
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    backdrop-filter: blur(18px);
+    box-shadow: 0 18px 36px rgba(0, 0, 0, 0.18);
+    font-weight: 600;
+    color: #f7f3ea;
+}
+
+.requestChip {
+    background: rgba(156, 62, 18, 0.78);
+}
+
+.offerChip {
+    background: rgba(17, 83, 66, 0.82);
+}
+
+.metaChip {
+    background: rgba(10, 20, 18, 0.68);
+}
+
+.sidebar {
+    position: absolute;
+    top: 92px;
+    right: 24px;
+    bottom: 24px;
+    z-index: 1120;
+    width: clamp(360px, 32vw, 480px);
+    min-height: 0;
+    padding: 0;
+}
+
+.sidebarPanel {
+    height: 100%;
+    padding: 24px;
+    border-radius: 32px;
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    background: rgba(255, 250, 241, 0.84);
+    backdrop-filter: blur(24px);
+    box-shadow: 0 28px 70px rgba(0, 0, 0, 0.18);
+    display: grid;
+    grid-template-rows: auto auto auto auto minmax(0, 1fr);
+    gap: 18px;
+    overflow-y: auto;
+}
+
+.sidebarHeader,
+.filtersPanel,
+.focusCard,
+.resultsPanel,
+.list {
+    display: grid;
+    gap: 14px;
+}
+
+.sidebarHeader h1,
+.sidebarHeader p,
+.focusCard h2,
+.focusCard p,
+.listHeader h2,
+.listMeta,
+.error,
+.loading {
+    margin: 0;
+}
+
+.sidebarHeader h1,
+.listHeader h2,
+.focusCard h2 {
+    font-size: clamp(1.4rem, 1.8vw, 2rem);
+    line-height: 1.05;
+}
+
+.sidebarHeader p,
+.focusCard p,
+.listMeta,
+.loading {
+    color: var(--ink-soft);
+    line-height: 1.6;
+}
+
+.eyebrow,
+.sectionLabel {
+    margin: 0;
+    font-size: 0.74rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--leaf);
+}
+
+.actionRow,
+.focusMeta {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.primaryAction,
+.secondaryAction,
+.ghostAction {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 12px 16px;
+    border-radius: 999px;
+    font-weight: 700;
+}
+
+.primaryAction {
+    background: linear-gradient(135deg, var(--accent), #f0b970);
+    color: #fffaf0;
+}
+
+.secondaryAction,
+.ghostAction {
+    border: 1px solid rgba(16, 37, 31, 0.12);
+    background: rgba(255, 255, 255, 0.62);
+    color: var(--ink-strong);
+}
+
+.ghostAction {
+    padding-inline: 14px;
+    cursor: pointer;
+}
+
+.filtersPanel,
+.focusCard,
+.resultsPanel {
+    padding: 18px;
+    border-radius: 24px;
+    border: 1px solid rgba(16, 37, 31, 0.08);
+    background: rgba(255, 255, 255, 0.66);
+}
+
+.focusCard {
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.78), rgba(247, 241, 232, 0.88));
+}
+
+.resultsPanel {
+    min-height: 0;
+    align-content: start;
+    padding-top: 22px;
+    background: rgba(255, 255, 255, 0.72);
+    overflow: hidden;
+}
+
+.sectionHeader,
+.listHeader {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.listTitleBlock {
+    display: grid;
+    gap: 8px;
+}
+
+.listTitleRow {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    min-height: 28px;
+    width: fit-content;
+    max-width: 100%;
+    padding: 10px 12px;
+    border-radius: 18px;
+    background: rgba(247, 241, 232, 0.94);
+    border: 1px solid rgba(16, 37, 31, 0.06);
+}
+
+.resultBadge {
+    display: inline-flex;
+    align-items: center;
+    padding: 7px 10px;
+    border-radius: 999px;
+    background: rgba(31, 111, 87, 0.1);
+    color: var(--leaf);
+    font-size: 0.8rem;
+    font-weight: 700;
+    line-height: 1;
+}
+
+.listHeader {
+    display: grid;
+    gap: 10px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid rgba(16, 37, 31, 0.08);
+}
+
+.listHeader h2 {
+    margin: 0;
+    font-size: clamp(1.15rem, 1.45vw, 1.7rem);
+    line-height: 1.05;
+}
+
+.listMeta {
+    max-width: 30ch;
+    font-size: 0.95rem;
+    line-height: 1.5;
+}
+
+.focusMeta {
+    color: var(--ink-soft);
+    font-size: 0.92rem;
+}
+
+.listArea {
+    min-height: 0;
+    overflow: visible;
+    padding-top: 2px;
+    padding-right: 4px;
+}
+
+.sidebarPanel::-webkit-scrollbar {
+    width: 10px;
+}
+
+.sidebarPanel::-webkit-scrollbar-thumb {
+    border-radius: 999px;
+    background: rgba(16, 37, 31, 0.14);
+}
+
+.list {
+    gap: 14px;
+}
+
+.error {
+    color: var(--accent-strong);
+}
+
+@media (max-width: 1180px) {
+    .page {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 16px;
+        padding: 132px 16px 20px;
+        min-height: auto;
+        overflow: visible;
+    }
+
+    .mapStage {
+        position: relative;
+        min-height: 58vh;
+        border-radius: 28px;
+        border-right: none;
+        overflow: hidden;
+    }
+
+    .mapLayer {
+        position: absolute;
+        inset: 0;
+    }
+
+    .searchOverlay {
+        top: 16px;
+        width: calc(100% - 32px);
+    }
+
+    .mapLegend {
+        left: 16px;
+        right: 16px;
+        bottom: 16px;
+        max-width: none;
+    }
+
+    .sidebar {
+        position: relative;
+        top: auto;
+        right: auto;
+        bottom: auto;
+        width: auto;
+        min-height: 0;
+        padding: 0;
+    }
+
+    .sidebarPanel {
+        height: auto;
+        min-height: 0;
+    }
+}
+
+@media (max-width: 720px) {
+    .searchOverlay {
+        width: calc(100% - 24px);
+    }
+
+    .sidebarPanel {
+        padding: 18px;
+        border-radius: 24px;
+    }
+
+    .sectionHeader,
+    .listHeader {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .listMeta {
+        max-width: none;
+    }
+}

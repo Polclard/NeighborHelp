@@ -5,9 +5,9 @@ function NotFoundPage() {
   return (
     <section className={styles.page}>
       <p className={styles.code}>404</p>
-      <h1>That route has not been mapped yet.</h1>
+      <h1>That route does not exist.</h1>
       <p>
-        The frontend shell is in place, but this page is outside the current route tree.
+        The application has real screens now, but this URL is outside the current route tree.
       </p>
       <Link className={styles.link} to="/">
         Return to the app shell

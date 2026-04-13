@@ -1,0 +1,125 @@
+.card {
+  padding: 18px;
+  border-radius: var(--radius-lg);
+  border: 1px solid rgba(16, 37, 31, 0.1);
+  background: rgba(255, 255, 255, 0.72);
+  display: grid;
+  gap: 14px;
+  cursor: pointer;
+  transition: transform 160ms ease, border-color 160ms ease, box-shadow 160ms ease;
+}
+
+.card:hover {
+  transform: translateY(-1px);
+  border-color: rgba(31, 111, 87, 0.24);
+  box-shadow: 0 18px 30px rgba(16, 37, 31, 0.08);
+}
+
+.selected {
+  border-color: rgba(31, 111, 87, 0.42);
+  box-shadow: 0 20px 36px rgba(16, 37, 31, 0.12);
+}
+
+.header,
+.actions,
+.owner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.badges {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.date {
+  font-size: 0.8rem;
+  color: var(--ink-soft);
+}
+
+.title,
+.description,
+.ownerName,
+.ownerMeta {
+  margin: 0;
+}
+
+.title {
+  font-size: 1.2rem;
+  line-height: 1.2;
+}
+
+.description {
+  color: var(--ink-soft);
+  line-height: 1.6;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.meta {
+  margin: 0;
+  display: grid;
+  gap: 10px;
+}
+
+.meta div {
+  display: grid;
+  gap: 4px;
+}
+
+.meta dt {
+  font-size: 0.74rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--leaf);
+}
+
+.meta dd {
+  margin: 0;
+  color: var(--ink-soft);
+}
+
+.owner {
+  justify-content: flex-start;
+}
+
+.ownerMeta {
+  margin-top: 4px;
+  color: var(--ink-soft);
+  font-size: 0.88rem;
+}
+
+.primaryAction,
+.secondaryAction {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 14px;
+  border-radius: 999px;
+  font-weight: 600;
+}
+
+.primaryAction {
+  background: linear-gradient(135deg, var(--accent), #f0b970);
+  color: #fffaf0;
+}
+
+.secondaryAction {
+  border: 1px solid rgba(16, 37, 31, 0.12);
+  background: rgba(16, 37, 31, 0.04);
+  color: var(--ink-strong);
+}
+
+@media (max-width: 720px) {
+  .header,
+  .actions {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
