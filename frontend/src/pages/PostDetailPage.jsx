@@ -23,6 +23,7 @@ import { useAppSelector } from '../hooks/useAppSelector.js'
 import { fetchPublicProfile as fetchPublicProfileRequest, fetchUserReviews as fetchUserReviewsRequest } from '../services/api/profileApi.js'
 import { reportPost } from '../services/api/reportApi.js'
 import { createReview } from '../services/api/reviewApi.js'
+import { useI18n } from '../i18n/useI18n.js'
 import { formatDateTime } from '../utils/formatDateTime.js'
 import { openDirections } from '../utils/openDirections.js'
 import { readApiMessage } from '../utils/readApiMessage.js'
@@ -30,6 +31,7 @@ import styles from './PostDetailPage.module.css'
 
 function PostDetailPage() {
   const dispatch = useAppDispatch()
+  const { t } = useI18n()
   const navigate = useNavigate()
   const { postId } = useParams()
   const { currentUser } = useAppSelector((state) => state.auth)
@@ -92,16 +94,16 @@ function PostDetailPage() {
 
   if (detailStatus === 'loading' && !activePost) {
     return (
-      <SurfaceCard eyebrow="Posts" title="Loading post details">
-        <p className={styles.copy}>Fetching the latest post data...</p>
+      <SurfaceCard eyebrow={t('postsPage.eyebrow')} title={t('postDetail.loadingTitle')}>
+        <p className={styles.copy}>{t('postDetail.loadingDescription')}</p>
       </SurfaceCard>
     )
   }
 
   if (!activePost) {
     return (
-      <SurfaceCard eyebrow="Posts" title="Post not available">
-        <p className={styles.error}>{error || 'This post could not be loaded.'}</p>
+      <SurfaceCard eyebrow={t('postsPage.eyebrow')} title={t('postDetail.unavailableTitle')}>
+        <p className={styles.error}>{error || t('postDetail.unavailableDescription')}</p>
       </SurfaceCard>
     )
   }
@@ -121,7 +123,7 @@ function PostDetailPage() {
     !helperReviews.some((review) => review.postId === activePost.id)
   const canReport = currentUser && currentUser.id !== activePost.userId
   const canMessageAuthor = currentUser && currentUser.id !== activePost.userId
-  const transitions = isOwner ? getAvailableStatusTransitions(activePost) : []
+  const transitions = isOwner ? getAvailableStatusTransitions(activePost, t) : []
   const postReview = helperReviews.filter((review) => review.postId === activePost.id)
 
   const handleRefreshHelperReviews = async () => {
@@ -141,35 +143,35 @@ function PostDetailPage() {
   return (
     <div className={styles.page}>
       <SurfaceCard
-        eyebrow="Post detail"
+        eyebrow={t('postDetail.eyebrow')}
         title={activePost.title}
         description={activePost.description}
         actions={
           <div className={styles.topActions}>
             <Link className={styles.secondaryAction} to="/map">
-              Back to map
+              {t('postsPage.backToMap')}
             </Link>
             {isOwner && isEditablePost(activePost) ? (
               <Link className={styles.secondaryAction} to={`/posts/${activePost.id}/edit`}>
-                Edit post
+                {t('common.actions.editPost')}
               </Link>
             ) : null}
             {canMessageAuthor ? (
               <Link className={styles.primaryAction} to={`/chat?userId=${activePost.userId}&postId=${activePost.id}`}>
-                Message author
+                {t('common.actions.messageAuthor')}
               </Link>
             ) : null}
           </div>
         }
       >
         <div className={styles.badges}>
-          <StatusBadge value={activePost.postType} label={formatPostType(activePost.postType)} />
-          <StatusBadge value={activePost.status} label={formatPostStatus(activePost.status)} />
+          <StatusBadge value={activePost.postType} label={formatPostType(activePost.postType, t)} />
+          <StatusBadge value={activePost.status} label={formatPostStatus(activePost.status, t)} />
         </div>
 
         <div className={styles.layout}>
           <div className={styles.mainColumn}>
-            <SurfaceCard title="Location" description={activePost.addressLabel || 'Pinned service location'}>
+            <SurfaceCard title={t('postDetail.locationTitle')} description={activePost.addressLabel || t('postDetail.locationDescription')}>
               <PostMap
                 markers={[
                   {
@@ -200,12 +202,12 @@ function PostDetailPage() {
                     )
                   }
                 >
-                  Get directions
+                  {t('common.actions.getDirections')}
                 </button>
               </div>
             </SurfaceCard>
 
-            <SurfaceCard title="Photo gallery" description="Photos can be added or removed while the post is still editable.">
+            <SurfaceCard title={t('postDetail.photoGalleryTitle')} description={t('postDetail.photoGalleryDescription')}>
               <PostPhotoGallery
                 editable={isOwner && isEditablePost(activePost)}
                 onRemove={async (photoId) => {
@@ -220,7 +222,7 @@ function PostDetailPage() {
 
               {isOwner && isEditablePost(activePost) ? (
                 <label className={styles.uploadField}>
-                  <span>Add more photos</span>
+                  <span>{t('common.actions.addMorePhotos')}</span>
                   <input
                     type="file"
                     accept="image/jpeg,image/png,image/webp"
@@ -244,8 +246,8 @@ function PostDetailPage() {
 
             {helperProfile ? (
               <SurfaceCard
-                title="Service completion and reviews"
-                description="Completed request flows can now collect the public trust signal that powers profiles."
+                title={t('postDetail.serviceCompletionTitle')}
+                description={t('postDetail.serviceCompletionDescription')}
               >
                 <ReviewList reviews={postReview} />
 
@@ -266,35 +268,35 @@ function PostDetailPage() {
                         setReviewStatus('ready')
                         await handleRefreshHelperReviews()
                       } catch (requestError) {
-                        setReviewStatus(readApiMessage(requestError, 'Review could not be submitted'))
+                        setReviewStatus(readApiMessage(requestError, t('postDetail.reviewFailed')))
                       }
                     }}
                   >
-                    <h3>Leave a review for the accepted helper</h3>
+                    <h3>{t('postDetail.leaveReviewTitle')}</h3>
                     <label className={styles.inlineField}>
-                      <span>Rating</span>
+                      <span>{t('postDetail.rating')}</span>
                       <select value={reviewRating} onChange={(event) => setReviewRating(event.target.value)}>
                         {[1, 2, 3, 4, 5].map((rating) => (
                           <option key={rating} value={rating}>
-                            {rating} star{rating > 1 ? 's' : ''}
+                            {t(rating > 1 ? 'postDetail.star.other' : 'postDetail.star.one', { count: rating })}
                           </option>
                         ))}
                       </select>
                     </label>
                     <label className={styles.inlineField}>
-                      <span>Comment</span>
+                      <span>{t('postDetail.comment')}</span>
                       <textarea
                         value={reviewComment}
-                        placeholder="Share how the service went."
+                        placeholder={t('postDetail.reviewPlaceholder')}
                         onChange={(event) => setReviewComment(event.target.value)}
                       />
                     </label>
                     <button className={styles.primaryAction} type="submit" disabled={reviewStatus === 'loading'}>
-                      {reviewStatus === 'loading' ? 'Submitting review...' : 'Submit review'}
+                      {reviewStatus === 'loading' ? t('postDetail.submittingReview') : t('common.actions.submitReview')}
                     </button>
                     {typeof reviewStatus === 'string' && reviewStatus !== 'idle' && reviewStatus !== 'loading' ? (
                       <p className={styles.feedback}>
-                        {reviewStatus === 'ready' ? 'Review submitted successfully.' : reviewStatus}
+                        {reviewStatus === 'ready' ? t('postDetail.reviewSubmitted') : reviewStatus}
                       </p>
                     ) : null}
                   </form>
@@ -309,7 +311,7 @@ function PostDetailPage() {
                 actions={
                   <div className={styles.sideActions}>
                     <Link className={styles.secondaryAction} to={`/profiles/${authorProfile.id}`}>
-                      Open public profile
+                      {t('postDetail.openPublicProfile')}
                     </Link>
                   </div>
                 }
@@ -322,7 +324,7 @@ function PostDetailPage() {
                 actions={
                   <div className={styles.sideActions}>
                     <Link className={styles.secondaryAction} to={`/profiles/${helperProfile.id}`}>
-                      Accepted helper profile
+                      {t('postDetail.acceptedHelperProfile')}
                     </Link>
                   </div>
                 }
@@ -330,33 +332,33 @@ function PostDetailPage() {
               />
             ) : null}
 
-            <SurfaceCard title="Post metadata">
+            <SurfaceCard title={t('postDetail.metadataTitle')}>
               <dl className={styles.metadata}>
                 <div>
-                  <dt>Category</dt>
+                  <dt>{t('postDetail.metadata.category')}</dt>
                   <dd>{activePost.category}</dd>
                 </div>
                 <div>
-                  <dt>Created</dt>
+                  <dt>{t('postDetail.metadata.created')}</dt>
                   <dd>{formatDateTime(activePost.createdAt)}</dd>
                 </div>
                 <div>
-                  <dt>Updated</dt>
+                  <dt>{t('postDetail.metadata.updated')}</dt>
                   <dd>{formatDateTime(activePost.updatedAt)}</dd>
                 </div>
                 <div>
-                  <dt>Contact phone</dt>
-                  <dd>{activePost.contactPhone || 'Not shared'}</dd>
+                  <dt>{t('postDetail.metadata.contactPhone')}</dt>
+                  <dd>{activePost.contactPhone || t('common.notShared')}</dd>
                 </div>
                 <div>
-                  <dt>Contact email</dt>
-                  <dd>{activePost.contactEmail || 'Not shared'}</dd>
+                  <dt>{t('postDetail.metadata.contactEmail')}</dt>
+                  <dd>{activePost.contactEmail || t('common.notShared')}</dd>
                 </div>
               </dl>
             </SurfaceCard>
 
             {canAccept || transitions.length || isOwner || canReport ? (
-              <SurfaceCard title="Available actions" description="Lifecycle and moderation controls are shown only when the backend would allow them.">
+              <SurfaceCard title={t('postDetail.actionsTitle')} description={t('postDetail.actionsDescription')}>
                 <div className={styles.sideActions}>
                   {canAccept ? (
                     <button
@@ -371,7 +373,7 @@ function PostDetailPage() {
                         }
                       }}
                     >
-                      Accept request
+                      {t('common.actions.acceptRequest')}
                     </button>
                   ) : null}
 
@@ -409,7 +411,7 @@ function PostDetailPage() {
                         }
                       }}
                     >
-                      Delete post
+                      {t('common.actions.deletePost')}
                     </button>
                   ) : null}
                 </div>
@@ -426,23 +428,23 @@ function PostDetailPage() {
                         await reportPost(activePost.id, { reason: reportReason.trim() })
                         setReportReason('')
                         setReportStatus('ready')
-                        setReportMessage('Post report submitted.')
+                        setReportMessage(t('postDetail.reportSubmitted'))
                       } catch (requestError) {
                         setReportStatus('error')
-                        setReportMessage(readApiMessage(requestError, 'Post could not be reported'))
+                        setReportMessage(readApiMessage(requestError, t('postDetail.reportFailed')))
                       }
                     }}
                   >
                     <label className={styles.inlineField}>
-                      <span>Report this post</span>
+                      <span>{t('common.actions.reportPost')}</span>
                       <textarea
                         value={reportReason}
-                        placeholder="Explain what needs moderation attention."
+                        placeholder={t('postDetail.reportPlaceholder')}
                         onChange={(event) => setReportReason(event.target.value)}
                       />
                     </label>
                     <button className={styles.secondaryAction} type="submit" disabled={reportStatus === 'loading'}>
-                      {reportStatus === 'loading' ? 'Submitting report...' : 'Submit report'}
+                      {reportStatus === 'loading' ? t('postDetail.submittingReport') : t('common.actions.submitReport')}
                     </button>
                     {reportMessage ? <p className={styles.feedback}>{reportMessage}</p> : null}
                   </form>

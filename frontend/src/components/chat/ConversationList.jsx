@@ -1,15 +1,18 @@
 import { formatDateTime } from '../../utils/formatDateTime.js'
+import { useI18n } from '../../i18n/useI18n.js'
 import AvatarBadge from '../ui/AvatarBadge.jsx'
 import EmptyState from '../ui/EmptyState.jsx'
 import StatusBadge from '../ui/StatusBadge.jsx'
 import styles from './ConversationList.module.css'
 
 function ConversationList({ conversations, activeConversationId, onSelect }) {
+  const { t } = useI18n()
+
   if (!conversations.length) {
     return (
       <EmptyState
-        title="No conversations yet"
-        description="Start from a post detail page or a public profile to open a new thread."
+        title={t('chat.emptyListTitle')}
+        description={t('chat.emptyListDescription')}
       />
     )
   }
@@ -39,14 +42,18 @@ function ConversationList({ conversations, activeConversationId, onSelect }) {
               {conversation.unreadCount ? <span className={styles.unread}>{conversation.unreadCount}</span> : null}
             </div>
 
-            <p className={styles.title}>{conversation.postTitle || 'Direct conversation'}</p>
+            <p className={styles.title}>{conversation.postTitle || t('chat.directConversation')}</p>
 
             <div className={styles.meta}>
               {conversation.postType ? <StatusBadge value={conversation.postType} /> : null}
               {conversation.postStatus ? <StatusBadge value={conversation.postStatus} /> : null}
             </div>
 
-            <p className={styles.preview}>{conversation.lastMessagePreview || 'No messages yet'}</p>
+            <p className={styles.preview}>
+              {conversation.lastMessagePreview === 'Image'
+                ? t('common.imageAttachment')
+                : conversation.lastMessagePreview || t('chat.noMessagesYet')}
+            </p>
           </button>
         )
       })}
@@ -55,4 +62,3 @@ function ConversationList({ conversations, activeConversationId, onSelect }) {
 }
 
 export default ConversationList
-

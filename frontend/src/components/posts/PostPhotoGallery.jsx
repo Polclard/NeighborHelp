@@ -1,13 +1,16 @@
 import { buildUploadUrl } from '../../utils/buildUploadUrl.js'
+import { useI18n } from '../../i18n/useI18n.js'
 import EmptyState from '../ui/EmptyState.jsx'
 import styles from './PostPhotoGallery.module.css'
 
 function PostPhotoGallery({ photos, editable = false, onRemove = null, removingPhotoId = null }) {
+  const { t } = useI18n()
+
   if (!photos.length) {
     return (
       <EmptyState
-        title="No post photos yet"
-        description="Photos can be added later to give neighbors more context before they reach out."
+        title={t('postPhotoGallery.emptyTitle')}
+        description={t('postPhotoGallery.emptyDescription')}
       />
     )
   }
@@ -16,7 +19,7 @@ function PostPhotoGallery({ photos, editable = false, onRemove = null, removingP
     <div className={styles.gallery}>
       {photos.map((photo) => (
         <figure key={photo.id} className={styles.item}>
-          <img src={buildUploadUrl(photo.filePath)} alt="Post" />
+          <img src={buildUploadUrl(photo.filePath)} alt={t('postPhotoGallery.imageAlt')} />
           {editable && onRemove ? (
             <button
               className={styles.remove}
@@ -24,7 +27,7 @@ function PostPhotoGallery({ photos, editable = false, onRemove = null, removingP
               onClick={() => onRemove(photo.id)}
               disabled={removingPhotoId === photo.id}
             >
-              {removingPhotoId === photo.id ? 'Removing...' : 'Remove'}
+              {removingPhotoId === photo.id ? t('postPhotoGallery.removing') : t('common.actions.remove')}
             </button>
           ) : null}
         </figure>
@@ -34,4 +37,3 @@ function PostPhotoGallery({ photos, editable = false, onRemove = null, removingP
 }
 
 export default PostPhotoGallery
-

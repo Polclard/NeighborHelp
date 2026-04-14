@@ -1,7 +1,7 @@
 export const primaryNavigation = [
-  { to: '/map', label: 'Explore' },
-  { to: '/posts', label: 'My posts', requiresAuth: true },
-  { to: '/chat', label: 'Messages', requiresAuth: true },
-  { to: '/profile', label: 'Profile', requiresAuth: true },
-  { to: '/admin', label: 'Admin', requiresRole: 'ROLE_ADMIN' },
+  { to: '/map', labelKey: 'nav.explore' },
+  { to: '/posts', labelKey: 'nav.posts', requiresAuth: true },
+  { to: '/chat', labelKey: 'nav.messages', requiresAuth: true },
+  { to: '/profile', labelKey: 'nav.profile', requiresAuth: true },
+  { to: '/admin', labelKey: 'nav.admin', requiresRole: 'ROLE_ADMIN' },
 ]

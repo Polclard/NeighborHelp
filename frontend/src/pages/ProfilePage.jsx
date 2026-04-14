@@ -7,10 +7,12 @@ import SurfaceCard from '../components/ui/SurfaceCard.jsx'
 import { fetchProfileReviews, fetchOwnProfile, updateOwnProfile, uploadAvatar } from '../features/profile/profileSlice.js'
 import { useAppDispatch } from '../hooks/useAppDispatch.js'
 import { useAppSelector } from '../hooks/useAppSelector.js'
+import { useI18n } from '../i18n/useI18n.js'
 import styles from './ProfilePage.module.css'
 
 function ProfilePage() {
   const dispatch = useAppDispatch()
+  const { t } = useI18n()
   const { currentUser } = useAppSelector((state) => state.auth)
   const { avatarStatus, error, ownProfile, ownStatus, reviews, reviewsStatus, saveStatus } = useAppSelector(
     (state) => state.profile,
@@ -25,16 +27,16 @@ function ProfilePage() {
 
   if (ownStatus === 'loading' && !ownProfile) {
     return (
-      <SurfaceCard eyebrow="Profile" title="Loading your workspace">
-        <p className={styles.copy}>Fetching your profile data...</p>
+      <SurfaceCard eyebrow={t('nav.profile')} title={t('profile.loadingTitle')}>
+        <p className={styles.copy}>{t('profile.loadingDescription')}</p>
       </SurfaceCard>
     )
   }
 
   if (!ownProfile) {
     return (
-      <SurfaceCard eyebrow="Profile" title="Profile unavailable">
-        <p className={styles.error}>{error || 'Your profile could not be loaded.'}</p>
+      <SurfaceCard eyebrow={t('nav.profile')} title={t('profile.unavailableTitle')}>
+        <p className={styles.error}>{error || t('profile.unavailableDescription')}</p>
       </SurfaceCard>
     )
   }
@@ -47,7 +49,7 @@ function ProfilePage() {
           actions={
             <div className={styles.actions}>
               <label className={styles.uploadButton}>
-                <span>{avatarStatus === 'loading' ? 'Uploading avatar...' : 'Upload avatar'}</span>
+                <span>{avatarStatus === 'loading' ? t('common.loading') : t('common.actions.uploadAvatar')}</span>
                 <input
                   type="file"
                   accept="image/jpeg,image/png,image/webp"
@@ -66,11 +68,11 @@ function ProfilePage() {
                 />
               </label>
               <Link className={styles.secondaryAction} to="/posts">
-                Manage my posts
+                {t('profile.manageMyPosts')}
               </Link>
               {ownProfile.role === 'ROLE_ADMIN' ? (
                 <Link className={styles.secondaryAction} to="/admin">
-                  Open admin panel
+                  {t('profile.openAdminPanel')}
                 </Link>
               ) : null}
             </div>
@@ -78,7 +80,7 @@ function ProfilePage() {
           profile={ownProfile}
         />
 
-        <SurfaceCard eyebrow="Profile" title="Edit your details" description="These values are reused as the default contact information for new posts.">
+        <SurfaceCard eyebrow={t('nav.profile')} title={t('profile.editTitle')} description={t('profile.editDescription')}>
           {error ? <p className={styles.error}>{error}</p> : null}
 
           <ProfileForm
@@ -91,16 +93,17 @@ function ProfilePage() {
       </div>
 
       <SurfaceCard
-        title="Reviews you have received"
-        description="Public reviews shape the trust signal that appears on your profile and on your posts."
+        title={t('profile.reviewsTitle')}
+        description={t('profile.reviewsDescription')}
       >
-        {reviewsStatus === 'loading' ? <p className={styles.copy}>Loading reviews...</p> : <ReviewList reviews={reviews} />}
+        {reviewsStatus === 'loading' ? <p className={styles.copy}>{t('profile.loadingReviews')}</p> : <ReviewList reviews={reviews} />}
       </SurfaceCard>
     </div>
   )
 }
 
 function ProfileForm({ dispatch, profile, saveStatus }) {
+  const { t } = useI18n()
   const [formValues, setFormValues] = useState({
     firstName: profile.firstName ?? '',
     lastName: profile.lastName ?? '',
@@ -131,7 +134,7 @@ function ProfileForm({ dispatch, profile, saveStatus }) {
       }}
     >
       <div className={styles.row}>
-        <FormField label="First name" error={validationErrors.firstName}>
+        <FormField label={t('auth.firstName')} error={validationErrors.firstName}>
           <input
             type="text"
             value={formValues.firstName}
@@ -139,7 +142,7 @@ function ProfileForm({ dispatch, profile, saveStatus }) {
           />
         </FormField>
 
-        <FormField label="Last name" error={validationErrors.lastName}>
+        <FormField label={t('auth.lastName')} error={validationErrors.lastName}>
           <input
             type="text"
             value={formValues.lastName}
@@ -148,7 +151,7 @@ function ProfileForm({ dispatch, profile, saveStatus }) {
         </FormField>
       </div>
 
-      <FormField label="Phone number" error={validationErrors.phoneNumber}>
+      <FormField label={t('auth.phoneNumber')} error={validationErrors.phoneNumber}>
         <input
           type="text"
           value={formValues.phoneNumber}
@@ -157,16 +160,16 @@ function ProfileForm({ dispatch, profile, saveStatus }) {
         />
       </FormField>
 
-      <FormField label="Bio" error={validationErrors.bio}>
+      <FormField label={t('profile.bio')} error={validationErrors.bio}>
         <textarea
           value={formValues.bio}
-          placeholder="What kinds of things do neighbors usually ask you for help with?"
+          placeholder={t('profile.bioPlaceholder')}
           onChange={(event) => setFormValues((current) => ({ ...current, bio: event.target.value }))}
         />
       </FormField>
 
       <button className={styles.primaryAction} type="submit" disabled={saveStatus === 'loading'}>
-        {saveStatus === 'loading' ? 'Saving profile...' : 'Save profile'}
+        {saveStatus === 'loading' ? t('profile.saving') : t('common.actions.saveProfile')}
       </button>
     </form>
   )

@@ -5,15 +5,19 @@ import {
   getPostTone,
   isEditablePost,
 } from '../../constants/posts.js'
+import { useI18n } from '../../i18n/useI18n.js'
 import { formatShortDate } from '../../utils/formatDateTime.js'
 import AvatarBadge from '../ui/AvatarBadge.jsx'
 import StatusBadge from '../ui/StatusBadge.jsx'
 import styles from './PostCard.module.css'
 
 function PostCard({ post, ownerProfile = null, distanceKm = null, isSelected = false, onSelect = null, showOwner = true }) {
+  const { t } = useI18n()
   const ownerName = ownerProfile
     ? `${ownerProfile.firstName} ${ownerProfile.lastName}`
-    : 'Neighbor'
+    : t('common.neighbor')
+  const ratingLabel = ownerProfile?.averageRating ? t('common.starCount', { rating: ownerProfile.averageRating }) : t('common.newNeighbor')
+  const reviewsLabel = t('common.reviewCount', { count: ownerProfile?.reviewCount ?? 0 })
 
   return (
     <article
@@ -34,8 +38,8 @@ function PostCard({ post, ownerProfile = null, distanceKm = null, isSelected = f
     >
       <div className={styles.header}>
         <div className={styles.badges}>
-          <StatusBadge value={post.postType} label={formatPostType(post.postType)} tone={getPostTone(post.postType)} />
-          <StatusBadge value={post.status} label={formatPostStatus(post.status)} />
+          <StatusBadge value={post.postType} label={formatPostType(post.postType, t)} tone={getPostTone(post.postType)} />
+          <StatusBadge value={post.status} label={formatPostStatus(post.status, t)} />
         </div>
         <span className={styles.date}>{formatShortDate(post.createdAt)}</span>
       </div>
@@ -45,17 +49,17 @@ function PostCard({ post, ownerProfile = null, distanceKm = null, isSelected = f
 
       <dl className={styles.meta}>
         <div>
-          <dt>Category</dt>
+          <dt>{t('filters.category.label')}</dt>
           <dd>{post.category}</dd>
         </div>
         <div>
-          <dt>Location</dt>
+          <dt>{t('postCard.meta.location')}</dt>
           <dd>{post.addressLabel || `${post.latitude}, ${post.longitude}`}</dd>
         </div>
         {distanceKm !== null ? (
           <div>
-            <dt>Distance</dt>
-            <dd>{distanceKm.toFixed(1)} km away</dd>
+            <dt>{t('postCard.meta.distance')}</dt>
+            <dd>{t('common.distanceAway', { distance: distanceKm.toFixed(1) })}</dd>
           </div>
         ) : null}
       </dl>
@@ -70,8 +74,10 @@ function PostCard({ post, ownerProfile = null, distanceKm = null, isSelected = f
           <div>
             <p className={styles.ownerName}>{ownerName}</p>
             <p className={styles.ownerMeta}>
-              {ownerProfile?.averageRating ? `${ownerProfile.averageRating} stars` : 'New neighbor'} ·{' '}
-              {ownerProfile?.reviewCount ?? 0} reviews
+              {t('postCard.ownerMeta', {
+                ratingLabel,
+                reviewsLabel,
+              })}
             </p>
           </div>
         </div>
@@ -79,11 +85,11 @@ function PostCard({ post, ownerProfile = null, distanceKm = null, isSelected = f
 
       <div className={styles.actions}>
         <Link className={styles.primaryAction} to={`/posts/${post.id}`}>
-          View details
+          {t('common.actions.viewDetails')}
         </Link>
         {isEditablePost(post) ? (
           <Link className={styles.secondaryAction} to={`/posts/${post.id}/edit`}>
-            Edit
+            {t('common.actions.edit')}
           </Link>
         ) : null}
       </div>
@@ -92,4 +98,3 @@ function PostCard({ post, ownerProfile = null, distanceKm = null, isSelected = f
 }
 
 export default PostCard
-

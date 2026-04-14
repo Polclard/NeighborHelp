@@ -4,12 +4,15 @@ import {Link, NavLink, Outlet, useLocation, useNavigate} from 'react-router-dom'
 import {logoutUser} from '../../features/auth/authSlice.js'
 import {useAppDispatch} from '../../hooks/useAppDispatch.js'
 import {useAppSelector} from '../../hooks/useAppSelector.js'
+import {useI18n} from '../../i18n/useI18n.js'
 import {APP_NAME} from '../../constants/env.js'
 import {primaryNavigation} from '../../constants/navigation.js'
+import LanguageSwitcher from './LanguageSwitcher.jsx'
 import styles from './AppShell.module.css'
 
 function AppShell() {
     const dispatch = useAppDispatch()
+    const {t} = useI18n()
     const location = useLocation()
     const navigate = useNavigate()
     const {bootstrapStatus, currentUser} = useAppSelector((state) => state.auth)
@@ -26,7 +29,7 @@ function AppShell() {
             return currentUser?.role === item.requiresRole
         }
 
-        if (item.requiresAuth) {
+                        if (item.requiresAuth) {
             return isAuthenticated
         }
 
@@ -47,11 +50,11 @@ function AppShell() {
             <header className={isMapRoute ? `${styles.header} ${styles.headerMap}` : styles.header}>
                 <Link className={styles.brand} to="/map" onClick={() => setMenuOpen(false)}>
                     {/*<span className={styles.brandMark}>NH</span>*/}
-                    <span className={styles.brandMark}><img src={"/neighborhelp_logo.png"} alt={"sad"} width={"auto"}
+                    <span className={styles.brandMark}><img src={"/neighborhelp_logo.png"} alt={APP_NAME} width={"auto"}
                                                             height={"60px"} style={{borderRadius: 50}}/></span>
                     <div className={styles.brandCopy}>
                         <span className={styles.brandTitle}>{APP_NAME}</span>
-                        <span className={styles.brandTag}>Local help, mapped</span>
+                        <span className={styles.brandTag}>{t('header.tagline')}</span>
                     </div>
                 </Link>
 
@@ -62,13 +65,13 @@ function AppShell() {
                     aria-controls="primary-navigation"
                     onClick={() => setMenuOpen((current) => !current)}
                 >
-                    {menuOpen ? 'Close' : 'Menu'}
+                    {menuOpen ? t('header.closeMenu') : t('header.menu')}
                 </button>
 
                 <nav
                     id="primary-navigation"
                     className={menuOpen ? `${styles.nav} ${styles.navOpen}` : styles.nav}
-                    aria-label="Primary navigation"
+                    aria-label={t('header.primaryNavigation')}
                 >
                     {visibleNavigation.map((item) => (
                         <NavLink
@@ -76,8 +79,11 @@ function AppShell() {
                             to={item.to}
                             aria-label={
                                 item.to === '/chat' && unreadMessageCount
-                                    ? `${item.label}, ${unreadMessageCount} unread messages`
-                                    : item.label
+                                    ? t('header.unreadMessages', {
+                                        count: unreadMessageCount,
+                                        label: t(item.labelKey),
+                                    })
+                                    : t(item.labelKey)
                             }
                             className={({isActive}) =>
                                 isActive ? `${styles.navLink} ${styles.navLinkActive}` : styles.navLink
@@ -86,7 +92,7 @@ function AppShell() {
                             end={item.to === '/map'}
                         >
                             <span className={styles.navLabelGroup}>
-                                <span>{item.label}</span>
+                                <span>{t(item.labelKey)}</span>
                                 {item.to === '/chat' && unreadMessageCount ? (
                                     <span className={styles.navBadge}>
                                         {unreadMessageCount > 99 ? '99+' : unreadMessageCount}
@@ -98,23 +104,24 @@ function AppShell() {
                 </nav>
 
                 <div className={menuOpen ? `${styles.actions} ${styles.actionsOpen}` : styles.actions}>
+                    <LanguageSwitcher/>
                     {bootstrapStatus !== 'ready' ? (
-                        <span className={styles.sessionBadge}>Restoring session</span>
+                        <span className={styles.sessionBadge}>{t('header.restoringSession')}</span>
                     ) : isAuthenticated ? (
                         <>
                             <Link className={styles.secondaryAction} to="/profile" onClick={() => setMenuOpen(false)}>
                                 {currentUser.firstName}
                             </Link>
                             <button type="button" className={styles.primaryAction} onClick={handleLogout}>
-                                Logout
+                                {t('common.actions.logout')}
                             </button>
                         </>
                     ) : (
                         <>
                             <Link className={styles.secondaryAction} to="/login"
-                                  onClick={() => setMenuOpen(false)}>Login</Link>
-                            <Link className={styles.primaryAction} to="/register" onClick={() => setMenuOpen(false)}>Join
-                                now</Link>
+                                  onClick={() => setMenuOpen(false)}>{t('common.actions.login')}</Link>
+                            <Link className={styles.primaryAction} to="/register"
+                                  onClick={() => setMenuOpen(false)}>{t('common.actions.joinNow')}</Link>
                         </>
                     )}
                 </div>

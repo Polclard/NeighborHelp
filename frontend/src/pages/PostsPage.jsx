@@ -7,10 +7,12 @@ import SurfaceCard from '../components/ui/SurfaceCard.jsx'
 import { fetchOwnPosts } from '../features/posts/postsSlice.js'
 import { useAppDispatch } from '../hooks/useAppDispatch.js'
 import { useAppSelector } from '../hooks/useAppSelector.js'
+import { useI18n } from '../i18n/useI18n.js'
 import styles from './PostsPage.module.css'
 
 function PostsPage() {
   const dispatch = useAppDispatch()
+  const { t } = useI18n()
   const { currentUser } = useAppSelector((state) => state.auth)
   const { error, ownItems, ownStatus } = useAppSelector((state) => state.posts)
 
@@ -27,33 +29,33 @@ function PostsPage() {
   return (
     <div className={styles.page}>
       <SurfaceCard
-        eyebrow="Posts"
-        title="Manage your service board"
-        description="This page is focused on your own requests and offers, while the public map remains optimized for discovery."
+        eyebrow={t('postsPage.eyebrow')}
+        title={t('postsPage.title')}
+        description={t('postsPage.description')}
         actions={
           <>
             <Link className={styles.primaryAction} to="/posts/new">
-              Create new post
+              {t('common.actions.createPost')}
             </Link>
             <Link className={styles.secondaryAction} to="/map">
-              Back to map
+              {t('postsPage.backToMap')}
             </Link>
           </>
         }
       >
         <div className={styles.metrics}>
-          <MetricCard label="Total posts" value={ownItems.length} caption="Everything you have published so far." />
-          <MetricCard label="Requests" value={requestCount} caption="Jobs where you asked the community for help." />
-          <MetricCard label="Offers" value={offerCount} caption="Services you are actively offering to neighbors." />
-          <MetricCard label="Open work" value={activeCount} caption="Items that are still available or in progress." />
+          <MetricCard label={t('postsPage.metric.total')} value={ownItems.length} caption={t('postsPage.metric.totalCaption')} />
+          <MetricCard label={t('posts.type.requests')} value={requestCount} caption={t('postsPage.metric.requestsCaption')} />
+          <MetricCard label={t('posts.type.offers')} value={offerCount} caption={t('postsPage.metric.offersCaption')} />
+          <MetricCard label={t('postsPage.metric.openWork')} value={activeCount} caption={t('postsPage.metric.openWorkCaption')} />
         </div>
       </SurfaceCard>
 
-      <SurfaceCard title="Your posts" description="Open a post to manage its photos, lifecycle state, and contact actions.">
+      <SurfaceCard title={t('postsPage.yourPosts')} description={t('postsPage.yourPostsDescription')}>
         {error ? <p className={styles.error}>{error}</p> : null}
 
         {ownStatus === 'loading' ? (
-          <p className={styles.copy}>Loading your posts...</p>
+          <p className={styles.copy}>{t('postsPage.loading')}</p>
         ) : ownItems.length ? (
           <div className={styles.list}>
             {ownItems.map((post) => (
@@ -67,11 +69,11 @@ function PostsPage() {
           </div>
         ) : (
           <EmptyState
-            title="You have not posted anything yet"
-            description="Create your first request or offer so it appears on the public map and in your management board."
+            title={t('postsPage.emptyTitle')}
+            description={t('postsPage.emptyDescription')}
             action={
               <Link className={styles.primaryAction} to="/posts/new">
-                Create your first post
+                {t('common.actions.createFirstPost')}
               </Link>
             }
           />
@@ -82,4 +84,3 @@ function PostsPage() {
 }
 
 export default PostsPage
-

@@ -3,6 +3,7 @@ import {Link} from 'react-router-dom'
 import {CircleMarker, MapContainer, Popup, TileLayer, Tooltip, useMap, useMapEvents, ZoomControl} from 'react-leaflet'
 import {defaultMapCenter} from '../../constants/map.js'
 import {formatPostStatus, formatPostType} from '../../constants/posts.js'
+import {useI18n} from '../../i18n/useI18n.js'
 import styles from './PostMap.module.css'
 
 function PostMap({
@@ -16,9 +17,17 @@ function PostMap({
                      selectedMarkerId = null,
                      viewerPosition = null,
                      variant = 'default',
+                     mapMode = '2d',
                  }) {
+    const {t} = useI18n()
     const frameClassName = variant === 'immersive' ? `${styles.frame} ${styles.frameImmersive}` : styles.frame
-    const mapClassName = variant === 'immersive' ? `${styles.map} ${styles.mapImmersive}` : styles.map
+    const mapClassName = [
+        styles.map,
+        variant === 'immersive' ? styles.mapImmersive : '',
+        mapMode === '3d' ? styles.mapThreeDimensional : '',
+    ]
+        .filter(Boolean)
+        .join(' ')
 
     return (
         <div className={frameClassName}>
@@ -44,16 +53,16 @@ function PostMap({
                             weight: 2,
                         }}
                     >
-                        <Tooltip>Your position</Tooltip>
+                        <Tooltip>{t('postMap.yourPosition')}</Tooltip>
                     </CircleMarker>
                 ) : null}
 
                 {markers.map((marker) => {
-                    const isOffer = marker.postType === 'SERVICE_OFFER'
                     const isSelected = marker.id === selectedMarkerId
                     const centerPoint = [Number(marker.latitude), Number(marker.longitude)]
                     const detail = markerDetails[marker.id] ?? null
                     const hasInteractivePopup = variant === 'immersive' && Boolean(detail)
+                    const palette = resolveMarkerPalette(marker, isSelected)
 
                     return (
                         <CircleMarker
@@ -68,10 +77,10 @@ function PostMap({
                                     : undefined
                             }
                             pathOptions={{
-                                color: isOffer ? '#1f6f57' : '#d7662f',
-                                fillColor: isOffer ? '#7fd7b9' : '#ffd7b5',
-                                fillOpacity: isSelected ? 1 : 0.92,
-                                weight: isSelected ? 3 : 2,
+                                color: palette.color,
+                                fillColor: palette.fillColor,
+                                fillOpacity: palette.fillOpacity,
+                                weight: palette.weight,
                             }}
                         >
                             <Tooltip
@@ -92,7 +101,7 @@ function PostMap({
                                 <Popup>
                                     <strong>{marker.title}</strong>
                                     <br/>
-                                    {formatPostType(marker.postType)} · {formatPostStatus(marker.status)}
+                                    {formatPostType(marker.postType, t)} · {formatPostStatus(marker.status, t)}
                                     <br/>
                                     {marker.category}
                                 </Popup>
@@ -113,7 +122,7 @@ function PostMap({
                         }}
                     >
                         <Popup>
-                            Selected location
+                            {t('postMap.selectedLocation')}
                             <br/>
                             {Number(selection.latitude).toFixed(5)}, {Number(selection.longitude).toFixed(5)}
                         </Popup>
@@ -148,15 +157,16 @@ function MapViewportSync({center, zoom}) {
 }
 
 function MarkerInfoCard({detail, marker}) {
+    const {t} = useI18n()
     const avatarStyle = detail.ownerAvatar ? {backgroundImage: `url("${detail.ownerAvatar}")`} : undefined
 
     return (
         <div className={styles.infoCard}>
             <div className={styles.infoBadges}>
         <span className={marker.postType === 'SERVICE_OFFER' ? styles.offerBadge : styles.requestBadge}>
-          {formatPostType(marker.postType)}
+          {formatPostType(marker.postType, t)}
         </span>
-                <span className={styles.statusBadge}>{formatPostStatus(marker.status)}</span>
+                <span className={styles.statusBadge}>{formatPostStatus(marker.status, t)}</span>
             </div>
 
             <h3>{marker.title}</h3>
@@ -169,16 +179,43 @@ function MarkerInfoCard({detail, marker}) {
                 <div>
                     <p className={styles.infoOwnerName}>{detail.ownerName}</p>
                     <p className={styles.infoOwnerMeta}>
-                        {detail.distanceKm !== null ? `${detail.distanceKm.toFixed(1)} km away` : marker.category}
+                        {detail.distanceKm !== null ? t('common.distanceAway', {distance: detail.distanceKm.toFixed(1)}) : marker.category}
                     </p>
                 </div>
             </div>
 
             <Link className={styles.infoAction} to={`/posts/${marker.id}`}>
-                View details
+                {t('common.actions.viewDetails')}
             </Link>
         </div>
     )
+}
+
+function resolveMarkerPalette(marker, isSelected) {
+    if (marker.status === 'SERVICE_DONE') {
+        return {
+            color: '#64706f',
+            fillColor: '#aab3b2',
+            fillOpacity: isSelected ? 0.88 : 0.56,
+            weight: isSelected ? 3 : 2,
+        }
+    }
+
+    if (marker.postType === 'SERVICE_OFFER') {
+        return {
+            color: '#1f6f57',
+            fillColor: '#7fd7b9',
+            fillOpacity: isSelected ? 1 : 0.92,
+            weight: isSelected ? 3 : 2,
+        }
+    }
+
+    return {
+        color: '#d7662f',
+        fillColor: '#ffd7b5',
+        fillOpacity: isSelected ? 1 : 0.92,
+        weight: isSelected ? 3 : 2,
+    }
 }
 
 function MapClickHandler({onMapPick}) {

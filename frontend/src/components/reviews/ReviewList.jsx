@@ -1,4 +1,5 @@
 import { formatDateTime } from '../../utils/formatDateTime.js'
+import { useI18n } from '../../i18n/useI18n.js'
 import EmptyState from '../ui/EmptyState.jsx'
 import styles from './ReviewList.module.css'
 
@@ -13,11 +14,13 @@ function ReviewList({
   onReportReasonChange = null,
   onSubmitReport = null,
 }) {
+  const { t } = useI18n()
+
   if (!reviews.length) {
     return (
       <EmptyState
-        title="No reviews yet"
-        description="Completed services will start building trust here once neighbors leave ratings."
+        title={t('reviews.emptyTitle')}
+        description={t('reviews.emptyDescription')}
       />
     )
   }
@@ -40,19 +43,19 @@ function ReviewList({
               <strong className={styles.rating}>{stars}</strong>
             </div>
 
-            <p className={styles.comment}>{review.comment || 'No written comment left.'}</p>
+            <p className={styles.comment}>{review.comment || t('reviews.noComment')}</p>
 
             {canReport ? (
               <div className={styles.reportBlock}>
                 <button className={styles.reportButton} type="button" onClick={() => onBeginReport(review.id)}>
-                  Report review
+                  {t('common.actions.reportReview')}
                 </button>
 
                 {activeReportId === review.id ? (
                   <div className={styles.reportForm}>
                     <textarea
                       value={reportReason}
-                      placeholder="Explain why this review should be reviewed by admins."
+                      placeholder={t('reviews.reportPlaceholder')}
                       onChange={(event) => onReportReasonChange(event.target.value)}
                     />
                     <div className={styles.reportActions}>
@@ -62,10 +65,10 @@ function ReviewList({
                         disabled={reportingReviewId === review.id}
                         onClick={() => onSubmitReport(review.id)}
                       >
-                        {reportingReviewId === review.id ? 'Submitting...' : 'Submit report'}
+                        {reportingReviewId === review.id ? t('reviews.submitting') : t('common.actions.submitReport')}
                       </button>
                       <button className={styles.cancel} type="button" onClick={onCancelReport}>
-                        Cancel
+                        {t('common.actions.cancel')}
                       </button>
                     </div>
                   </div>
@@ -80,4 +83,3 @@ function ReviewList({
 }
 
 export default ReviewList
-

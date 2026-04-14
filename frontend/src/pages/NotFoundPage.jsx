@@ -1,16 +1,19 @@
 import { Link } from 'react-router-dom'
+import { useI18n } from '../i18n/useI18n.js'
 import styles from './NotFoundPage.module.css'
 
 function NotFoundPage() {
+  const { t } = useI18n()
+
   return (
     <section className={styles.page}>
       <p className={styles.code}>404</p>
-      <h1>That route does not exist.</h1>
+      <h1>{t('notFound.title')}</h1>
       <p>
-        The application has real screens now, but this URL is outside the current route tree.
+        {t('notFound.description')}
       </p>
       <Link className={styles.link} to="/">
-        Return to the app shell
+        {t('notFound.return')}
       </Link>
     </section>
   )

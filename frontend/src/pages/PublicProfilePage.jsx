@@ -6,12 +6,14 @@ import SurfaceCard from '../components/ui/SurfaceCard.jsx'
 import { clearPublicProfile, fetchProfileReviews, fetchPublicProfile } from '../features/profile/profileSlice.js'
 import { useAppDispatch } from '../hooks/useAppDispatch.js'
 import { useAppSelector } from '../hooks/useAppSelector.js'
+import { useI18n } from '../i18n/useI18n.js'
 import { reportReview } from '../services/api/reportApi.js'
 import { readApiMessage } from '../utils/readApiMessage.js'
 import styles from './PublicProfilePage.module.css'
 
 function PublicProfilePage() {
   const dispatch = useAppDispatch()
+  const { t } = useI18n()
   const { userId } = useParams()
   const { currentUser } = useAppSelector((state) => state.auth)
   const { error, publicProfile, publicStatus, reviews, reviewsStatus } = useAppSelector((state) => state.profile)
@@ -31,16 +33,16 @@ function PublicProfilePage() {
 
   if (publicStatus === 'loading' && !publicProfile) {
     return (
-      <SurfaceCard eyebrow="Profiles" title="Loading profile">
-        <p className={styles.copy}>Fetching the public profile and its reviews...</p>
+      <SurfaceCard eyebrow={t('nav.profile')} title={t('publicProfile.loadingTitle')}>
+        <p className={styles.copy}>{t('publicProfile.loadingDescription')}</p>
       </SurfaceCard>
     )
   }
 
   if (!publicProfile) {
     return (
-      <SurfaceCard eyebrow="Profiles" title="Profile unavailable">
-        <p className={styles.error}>{error || 'This profile could not be loaded.'}</p>
+      <SurfaceCard eyebrow={t('nav.profile')} title={t('publicProfile.unavailableTitle')}>
+        <p className={styles.error}>{error || t('publicProfile.unavailableDescription')}</p>
       </SurfaceCard>
     )
   }
@@ -51,19 +53,19 @@ function PublicProfilePage() {
         actions={
           <div className={styles.actions}>
             <Link className={styles.secondaryAction} to="/map">
-              Back to map
+              {t('postsPage.backToMap')}
             </Link>
             {currentUser?.id === publicProfile.id ? (
               <Link className={styles.primaryAction} to="/profile">
-                Open my profile
+                {t('common.actions.openMyProfile')}
               </Link>
             ) : currentUser ? (
               <Link className={styles.primaryAction} to={`/chat?userId=${publicProfile.id}`}>
-                Message neighbor
+                {t('common.actions.messageNeighbor')}
               </Link>
             ) : (
               <Link className={styles.primaryAction} to="/login">
-                Sign in to message
+                {t('common.actions.signInToMessage')}
               </Link>
             )}
           </div>
@@ -71,8 +73,8 @@ function PublicProfilePage() {
         profile={publicProfile}
       />
 
-      <SurfaceCard title="Received reviews" description="These reviews are public and come directly from completed service flows.">
-        {reviewsStatus === 'loading' ? <p className={styles.copy}>Loading reviews...</p> : null}
+      <SurfaceCard title={t('publicProfile.receivedReviewsTitle')} description={t('publicProfile.receivedReviewsDescription')}>
+        {reviewsStatus === 'loading' ? <p className={styles.copy}>{t('profile.loadingReviews')}</p> : null}
         {reportMessage ? <p className={styles.feedback}>{reportMessage}</p> : null}
 
         <ReviewList
@@ -104,11 +106,11 @@ function PublicProfilePage() {
 
                   try {
                     await reportReview(reviewId, { reason: reportReason.trim() })
-                    setReportMessage('Review report submitted.')
+                    setReportMessage(t('reviews.reviewReportSubmitted'))
                     setActiveReportId(null)
                     setReportReason('')
                   } catch (requestError) {
-                    setReportMessage(readApiMessage(requestError, 'Review could not be reported'))
+                    setReportMessage(readApiMessage(requestError, t('reviews.reviewReportFailed')))
                   } finally {
                     setReportingReviewId(null)
                   }

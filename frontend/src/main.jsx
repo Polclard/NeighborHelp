@@ -6,13 +6,16 @@ import 'leaflet/dist/leaflet.css'
 import './index.css'
 import App from './App.jsx'
 import { store } from './app/store.js'
+import { I18nProvider } from './i18n/I18nProvider.jsx'
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <Provider store={store}>
-      <BrowserRouter>
-        <App />
-      </BrowserRouter>
+      <I18nProvider>
+        <BrowserRouter>
+          <App />
+        </BrowserRouter>
+      </I18nProvider>
     </Provider>
   </StrictMode>,
 )

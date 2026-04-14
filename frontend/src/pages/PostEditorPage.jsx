@@ -15,6 +15,7 @@ import {
 import { useBrowserLocation } from '../hooks/useBrowserLocation.js'
 import { useAppDispatch } from '../hooks/useAppDispatch.js'
 import { useAppSelector } from '../hooks/useAppSelector.js'
+import { useI18n } from '../i18n/useI18n.js'
 import styles from './PostEditorPage.module.css'
 
 const emptyValues = {
@@ -31,6 +32,7 @@ const emptyValues = {
 
 function PostEditorPage({ mode }) {
   const dispatch = useAppDispatch()
+  const { t } = useI18n()
   const navigate = useNavigate()
   const { postId } = useParams()
   const { currentUser } = useAppSelector((state) => state.auth)
@@ -50,8 +52,8 @@ function PostEditorPage({ mode }) {
 
   if (mode === 'edit' && detailStatus === 'loading' && !activePost) {
     return (
-      <SurfaceCard eyebrow="Posts" title="Loading post editor">
-        <p className={styles.copy}>Fetching the current post values...</p>
+      <SurfaceCard eyebrow={t('postsPage.eyebrow')} title={t('postEditor.loadingTitle')}>
+        <p className={styles.copy}>{t('postEditor.loadingDescription')}</p>
       </SurfaceCard>
     )
   }
@@ -79,12 +81,12 @@ function PostEditorPage({ mode }) {
   return (
     <div className={styles.page}>
       <SurfaceCard
-        eyebrow="Posts"
-        title={mode === 'edit' ? 'Edit your post' : 'Create a new post'}
-        description="The create and edit flows now share the same form, location picker, and upload flow."
+        eyebrow={t('postsPage.eyebrow')}
+        title={mode === 'edit' ? t('postEditor.titleEdit') : t('postEditor.titleCreate')}
+        description={t('postEditor.description')}
         actions={
           <Link className={styles.secondaryAction} to={mode === 'edit' && postId ? `/posts/${postId}` : '/posts'}>
-            Back
+            {t('common.actions.back')}
           </Link>
         }
       >
@@ -97,13 +99,13 @@ function PostEditorPage({ mode }) {
           mode={mode}
           navigate={navigate}
           postId={postId}
-          submitLabel={mode === 'edit' ? 'Save changes' : 'Create post'}
+          submitLabel={mode === 'edit' ? t('common.actions.saveChanges') : t('postEditor.createPost')}
           submitting={submitting}
         />
       </SurfaceCard>
 
       {mode === 'edit' && activePost ? (
-        <SurfaceCard title="Existing photos" description="Photos can be removed individually while the post is still editable.">
+        <SurfaceCard title={t('postEditor.existingPhotosTitle')} description={t('postEditor.existingPhotosDescription')}>
           <PostPhotoGallery
             editable
             onRemove={async (photoId) => {

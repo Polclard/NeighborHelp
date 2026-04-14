@@ -25,6 +25,34 @@
   border-radius: 0;
 }
 
+.mapThreeDimensional {
+  background:
+    radial-gradient(circle at top, rgba(115, 168, 210, 0.26), transparent 34%),
+    linear-gradient(180deg, #cfe2ea 0%, #d9e6dd 18%, #e9ece6 100%);
+}
+
+.mapThreeDimensional :global(.leaflet-tile-pane) {
+  transform-origin: center 78%;
+  transform: perspective(1500px) rotateX(58deg) scale(1.28) translateY(-14%);
+  filter: saturate(1.04) contrast(0.92);
+}
+
+.mapThreeDimensional :global(.leaflet-map-pane) {
+  transform-style: preserve-3d;
+}
+
+.mapThreeDimensional :global(.leaflet-container) {
+  background:
+    linear-gradient(180deg, rgba(171, 206, 228, 0.86), rgba(226, 233, 228, 0.96));
+}
+
+.mapThreeDimensional :global(.leaflet-overlay-pane),
+.mapThreeDimensional :global(.leaflet-marker-pane),
+.mapThreeDimensional :global(.leaflet-popup-pane),
+.mapThreeDimensional :global(.leaflet-tooltip-pane) {
+  filter: drop-shadow(0 10px 18px rgba(0, 0, 0, 0.16));
+}
+
 :global(.leaflet-right .leaflet-control),
 :global(.leaflet-left .leaflet-control) {
   margin: 18px;

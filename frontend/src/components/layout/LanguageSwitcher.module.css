@@ -1,0 +1,74 @@
+.switcher {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+.trigger,
+.option {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  justify-content: center;
+  border-radius: 999px;
+  border: 1px solid rgba(16, 37, 31, 0.12);
+  background: rgba(255, 255, 255, 0.48);
+  color: var(--ink-strong);
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 160ms ease, border-color 160ms ease, background 160ms ease;
+}
+
+.trigger {
+  min-width: 42px;
+  min-height: 42px;
+  padding: 0;
+}
+
+.trigger:hover,
+.option:hover {
+  transform: translateY(-1px);
+  border-color: rgba(156, 62, 18, 0.32);
+}
+
+.triggerOpen {
+  border-color: rgba(127, 215, 185, 0.28);
+  background: rgba(31, 111, 87, 0.12);
+}
+
+.optionActive {
+  background: linear-gradient(135deg, rgba(31, 111, 87, 0.96), rgba(18, 65, 51, 0.94));
+  border-color: rgba(127, 215, 185, 0.28);
+  color: #f7f3ea;
+}
+
+.menu {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  z-index: 1300;
+  display: grid;
+  gap: 8px;
+  min-width: 148px;
+  padding: 10px;
+  border-radius: 18px;
+  border: 1px solid rgba(16, 37, 31, 0.12);
+  background: rgba(255, 250, 241, 0.94);
+  backdrop-filter: blur(20px);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.16);
+}
+
+.option {
+  justify-content: flex-start;
+  min-height: 40px;
+  padding: 9px 12px;
+}
+
+.flag {
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.label {
+  line-height: 1;
+}

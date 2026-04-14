@@ -1,4 +1,5 @@
-import { postFormTypeOptions } from '../../constants/posts.js'
+import { getPostFormTypeOptions } from '../../constants/posts.js'
+import { useI18n } from '../../i18n/useI18n.js'
 import FormField from '../ui/FormField.jsx'
 import PostMap from './PostMap.jsx'
 import styles from './PostForm.module.css'
@@ -18,6 +19,8 @@ function PostForm({
   locationStatus,
   locationError,
 }) {
+  const { t } = useI18n()
+  const postFormTypeOptions = getPostFormTypeOptions(t)
   const selection = values.latitude && values.longitude
     ? { latitude: Number(values.latitude), longitude: Number(values.longitude) }
     : null
@@ -25,7 +28,7 @@ function PostForm({
   return (
     <form className={styles.form} onSubmit={onSubmit}>
       <div className={styles.row}>
-        <FormField label="Title" error={errors.title}>
+        <FormField label={t('postForm.title')} error={errors.title}>
           <input
             type="text"
             name="title"
@@ -35,19 +38,19 @@ function PostForm({
           />
         </FormField>
 
-        <FormField label="Category" error={errors.category}>
+        <FormField label={t('filters.category.label')} error={errors.category}>
           <input
             type="text"
             name="category"
             value={values.category}
-            placeholder="Plumbing, shopping, moving..."
+            placeholder={t('postForm.categoryPlaceholder')}
             onChange={(event) => onChange({ category: event.target.value })}
           />
         </FormField>
       </div>
 
       <div className={styles.row}>
-        <FormField label="Post type" help={mode === 'edit' ? 'Post type cannot be changed after creation.' : ''}>
+        <FormField label={t('filters.postType.label')} help={mode === 'edit' ? t('postForm.postTypeLocked') : ''}>
           <select
             value={values.postType}
             disabled={mode === 'edit'}
@@ -61,18 +64,18 @@ function PostForm({
           </select>
         </FormField>
 
-        <FormField label="Address label" error={errors.addressLabel} help="Optional neighborhood or street hint.">
+        <FormField label={t('postForm.addressLabel')} error={errors.addressLabel} help={t('postForm.addressHelp')}>
           <input
             type="text"
             name="addressLabel"
             value={values.addressLabel}
-            placeholder="Debar Maalo, behind the market"
+            placeholder={t('postForm.addressPlaceholder')}
             onChange={(event) => onChange({ addressLabel: event.target.value })}
           />
         </FormField>
       </div>
 
-      <FormField label="Description" error={errors.description}>
+      <FormField label={t('postForm.description')} error={errors.description}>
         <textarea
           name="description"
           value={values.description}
@@ -82,7 +85,7 @@ function PostForm({
       </FormField>
 
       <div className={styles.row}>
-        <FormField label="Latitude" error={errors.latitude}>
+        <FormField label={t('postForm.latitude')} error={errors.latitude}>
           <input
             type="number"
             name="latitude"
@@ -92,7 +95,7 @@ function PostForm({
           />
         </FormField>
 
-        <FormField label="Longitude" error={errors.longitude}>
+        <FormField label={t('postForm.longitude')} error={errors.longitude}>
           <input
             type="number"
             name="longitude"
@@ -105,15 +108,15 @@ function PostForm({
 
       <div className={styles.locationActions}>
         <button className={styles.locationButton} type="button" onClick={onUseCurrentLocation}>
-          {locationStatus === 'loading' ? 'Locating...' : 'Use current location'}
+          {locationStatus === 'loading' ? t('filters.location.locating') : t('common.actions.useCurrentLocation')}
         </button>
         <p className={locationError ? styles.locationError : styles.locationHelp}>
-          {locationError || 'You can also click the map below to pick a different service location.'}
+          {locationError || t('postForm.locationHelp')}
         </p>
       </div>
 
       <PostMap
-        markers={selection ? [{ id: 'selection', title: 'Selected location', ...selection, postType: values.postType, status: 'REQUESTING', category: values.category || 'Selected spot' }] : []}
+        markers={selection ? [{ id: 'selection', title: t('postForm.selectedLocationTitle'), ...selection, postType: values.postType, status: 'REQUESTING', category: values.category || t('postMap.selectedSpot') }] : []}
         selection={selection}
         center={selection ? [selection.latitude, selection.longitude] : undefined}
         zoom={selection ? 15 : 13}
@@ -122,9 +125,9 @@ function PostForm({
 
       <div className={styles.row}>
         <FormField
-          label="Contact phone"
+          label={t('postForm.contactPhone')}
           error={errors.contactPhone}
-          help="Leave blank to use the number from your profile."
+          help={t('postForm.contactPhoneHelp')}
         >
           <input
             type="text"
@@ -136,9 +139,9 @@ function PostForm({
         </FormField>
 
         <FormField
-          label="Contact email"
+          label={t('postForm.contactEmail')}
           error={errors.contactEmail}
-          help="Leave blank to use the email from your profile."
+          help={t('postForm.contactEmailHelp')}
         >
           <input
             type="email"
@@ -150,7 +153,7 @@ function PostForm({
         </FormField>
       </div>
 
-      <FormField label="Photos" help="Up to 5 JPG, PNG, or WEBP images. They will upload after the post is saved.">
+      <FormField label={t('postForm.photos')} help={t('postForm.photosHelp')}>
         <input type="file" accept="image/jpeg,image/png,image/webp" multiple onChange={onFilesChange} />
       </FormField>
 
@@ -163,11 +166,10 @@ function PostForm({
       ) : null}
 
       <button className={styles.submit} type="submit" disabled={submitting}>
-        {submitting ? 'Saving...' : submitLabel}
+        {submitting ? t('postForm.saving') : submitLabel}
       </button>
     </form>
   )
 }
 
 export default PostForm
-

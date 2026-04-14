@@ -1,4 +1,5 @@
 import { useEffect, useId, useRef, useState } from 'react'
+import { useI18n } from '../../i18n/useI18n.js'
 import styles from './SpotlightSearch.module.css'
 
 function SpotlightSearch({
@@ -8,6 +9,7 @@ function SpotlightSearch({
   placeholder = 'Search requests, offers, or categories',
   value,
 }) {
+  const { t } = useI18n()
   const inputId = useId()
   const inputRef = useRef(null)
   const [expanded, setExpanded] = useState(Boolean(value))
@@ -63,9 +65,9 @@ function SpotlightSearch({
       onClick={!isExpanded ? handleExpand : undefined}
     >
       <button className={styles.launcher} type="button" onClick={handleExpand}>
-        <span className={styles.badge}>Search</span>
+        <span className={styles.badge}>{t('search.badge')}</span>
         <span className={styles.launcherLabel}>{label}</span>
-        <span className={styles.shortcut}>Cmd/Ctrl + K</span>
+        <span className={styles.shortcut}>{t('search.shortcut')}</span>
       </button>
 
       <div className={isExpanded ? `${styles.field} ${styles.fieldExpanded}` : styles.field}>
@@ -100,7 +102,7 @@ function SpotlightSearch({
               })
             }}
           >
-            Clear
+            {t('common.actions.clear')}
           </button>
         ) : (
           <button
@@ -109,7 +111,7 @@ function SpotlightSearch({
             onMouseDown={(event) => event.preventDefault()}
             onClick={handleCollapse}
           >
-            Close
+            {t('common.actions.close')}
           </button>
         )}
       </div>

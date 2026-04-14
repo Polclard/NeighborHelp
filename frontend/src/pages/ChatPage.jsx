@@ -13,11 +13,13 @@ import {
 import { useAppDispatch } from '../hooks/useAppDispatch.js'
 import { useAppSelector } from '../hooks/useAppSelector.js'
 import { waitForStompConnection } from '../services/websocket/stompClient.js'
+import { useI18n } from '../i18n/useI18n.js'
 import { readApiMessage } from '../utils/readApiMessage.js'
 import styles from './ChatPage.module.css'
 
 function ChatPage() {
   const dispatch = useAppDispatch()
+  const { t } = useI18n()
   const [searchParams, setSearchParams] = useSearchParams()
   const { currentUser } = useAppSelector((state) => state.auth)
   const {
@@ -91,17 +93,16 @@ function ChatPage() {
   return (
     <div className={styles.page}>
       <SurfaceCard
-        eyebrow="Realtime"
-        title="Live conversations"
-        description="The chat page now uses the conversation APIs plus STOMP subscriptions so new messages arrive without a page refresh."
+        eyebrow={t('chat.eyebrow')}
+        title={t('chat.title')}
       >
         {error ? <p className={styles.error}>{error}</p> : null}
 
         <div className={styles.layout}>
           <div className={styles.column}>
-            <SurfaceCard title="Conversations" description="Threads started from posts or public profiles appear here.">
+            <SurfaceCard title={t('chat.conversationsTitle')} description={t('chat.conversationsDescription')}>
               {conversationsStatus === 'loading' ? (
-                <p className={styles.copy}>Loading conversations...</p>
+                <p className={styles.copy}>{t('chat.loadingConversations')}</p>
               ) : (
                 <ConversationList
                   activeConversationId={activeConversationId}
@@ -114,13 +115,13 @@ function ChatPage() {
 
           <div className={styles.column}>
             <SurfaceCard
-              title={activeConversation ? activeConversation.postTitle || 'Direct conversation' : 'Select a conversation'}
-              description={activeConversation ? `${activeConversation.otherUserFirstName} ${activeConversation.otherUserLastName}` : 'Choose a thread from the left side or start from a post detail page.'}
+              title={activeConversation ? activeConversation.postTitle || t('chat.directConversation') : t('chat.selectConversation')}
+              description={activeConversation ? `${activeConversation.otherUserFirstName} ${activeConversation.otherUserLastName}` : t('chat.selectConversationDescription')}
             >
               {activeConversation ? (
                 <>
                   {messagesStatusByConversation[activeConversation.id] === 'loading' ? (
-                    <p className={styles.copy}>Loading messages...</p>
+                    <p className={styles.copy}>{t('chat.loadingMessages')}</p>
                   ) : (
                     <MessageThread currentUserId={currentUser?.id} messages={messages} />
                   )}
@@ -152,7 +153,7 @@ function ChatPage() {
                         setComposerError(
                           readApiMessage(
                             error,
-                            'The realtime connection is not ready yet. Wait a moment and try again.',
+                            t('chat.connectionNotReady'),
                           ),
                         )
                       }
@@ -164,8 +165,8 @@ function ChatPage() {
                 </>
               ) : (
                 <EmptyState
-                  title="No active conversation"
-                  description="Select a thread or open one from a post detail page to start chatting."
+                  title={t('chat.emptyActiveTitle')}
+                  description={t('chat.emptyActiveDescription')}
                 />
               )}
             </SurfaceCard>

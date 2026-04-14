@@ -1,0 +1,49 @@
+.chart {
+  display: grid;
+  gap: 12px;
+}
+
+.svg {
+  width: 100%;
+  height: auto;
+}
+
+.grid {
+  stroke: rgba(16, 37, 31, 0.1);
+  stroke-width: 1;
+}
+
+.line {
+  fill: none;
+  stroke: #1f6f57;
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.dot {
+  fill: #fffaf0;
+  stroke: #1f6f57;
+  stroke-width: 3;
+}
+
+.labels {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.labelCell {
+  display: grid;
+  gap: 2px;
+  text-align: center;
+}
+
+.labelCell span {
+  color: var(--ink-soft);
+  font-size: 0.78rem;
+}
+
+.labelCell strong {
+  font-size: 0.92rem;
+}

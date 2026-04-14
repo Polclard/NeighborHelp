@@ -9,10 +9,44 @@
   grid-template-columns: repeat(5, minmax(0, 1fr));
 }
 
+.analyticsGrid {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  margin-top: 18px;
+}
+
+.chartCard {
+  padding: 18px;
+  border-radius: 24px;
+  border: 1px solid rgba(16, 37, 31, 0.08);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.84), rgba(247, 241, 232, 0.92));
+  display: grid;
+  gap: 16px;
+}
+
+.chartCardWide {
+  grid-column: span 2;
+}
+
+.chartHeader {
+  display: grid;
+  gap: 6px;
+}
+
+.chartHeader h3,
 .copy,
 .error,
-.subtle {
+.subtle,
+.chartEyebrow {
   margin: 0;
+}
+
+.chartEyebrow {
+  color: var(--leaf);
+  font-size: 0.74rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
 }
 
 .copy,
@@ -22,6 +56,36 @@
 
 .error {
   color: var(--accent-strong);
+}
+
+.toolbar {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin-bottom: 18px;
+}
+
+.filterField {
+  display: grid;
+  gap: 8px;
+}
+
+.filterField span {
+  color: var(--leaf);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.filterField input,
+.filterField select {
+  min-height: 46px;
+  padding: 0 14px;
+  border-radius: 16px;
+  border: 1px solid rgba(16, 37, 31, 0.12);
+  background: rgba(255, 255, 255, 0.76);
+  color: var(--ink-strong);
 }
 
 .tableActions {
@@ -60,14 +124,26 @@
   color: var(--accent-strong);
 }
 
-@media (max-width: 1200px) {
-  .metrics {
+@media (max-width: 1320px) {
+  .metrics,
+  .analyticsGrid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
+@media (max-width: 920px) {
+  .toolbar {
+    grid-template-columns: 1fr;
+  }
+
+  .chartCardWide {
+    grid-column: span 1;
+  }
+}
+
 @media (max-width: 640px) {
-  .metrics {
+  .metrics,
+  .analyticsGrid {
     grid-template-columns: 1fr;
   }
 }
