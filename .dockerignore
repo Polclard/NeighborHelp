@@ -1,0 +1,10 @@
+.git
+.idea
+target
+frontend
+var
+*.iml
+NeighborHelp.http
+docker-compose.yml
+IMPLEMENTATION_PLAN.md
+verify.sh

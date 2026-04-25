@@ -38,6 +38,7 @@
       <trans-unit id="common.actions.useCurrentLocation"><source>Use current location</source><target>Use current location</target></trans-unit>
       <trans-unit id="common.actions.clearLocation"><source>Clear location</source><target>Clear location</target></trans-unit>
       <trans-unit id="common.actions.getDirections"><source>Get directions</source><target>Get directions</target></trans-unit>
+      <trans-unit id="common.actions.hideDirections"><source>Hide directions</source><target>Hide directions</target></trans-unit>
       <trans-unit id="common.actions.addMorePhotos"><source>Add more photos</source><target>Add more photos</target></trans-unit>
       <trans-unit id="common.actions.uploadAvatar"><source>Upload avatar</source><target>Upload avatar</target></trans-unit>
       <trans-unit id="common.actions.openMyProfile"><source>Open my profile</source><target>Open my profile</target></trans-unit>
@@ -85,6 +86,9 @@
       <trans-unit id="map.viewMode"><source>Map view mode</source><target>Map view mode</target></trans-unit>
       <trans-unit id="map.view2d"><source>2D</source><target>2D</target></trans-unit>
       <trans-unit id="map.view3d"><source>3D</source><target>3D</target></trans-unit>
+      <trans-unit id="map.route.loading"><source>Loading route...</source><target>Loading route...</target></trans-unit>
+      <trans-unit id="map.route.error"><source>Could not load directions on the map right now.</source><target>Could not load directions on the map right now.</target></trans-unit>
+      <trans-unit id="map.route.summary"><source>{distance} km, {minutes} min</source><target>{distance} km, {minutes} min</target></trans-unit>
       <trans-unit id="map.legend.offers"><source>Offers {count}</source><target>Offers {count}</target></trans-unit>
       <trans-unit id="map.legend.currentPosition"><source>Using your current position</source><target>Using your current position</target></trans-unit>
       <trans-unit id="map.legend.publicView"><source>Using public city view</source><target>Using public city view</target></trans-unit>
@@ -200,6 +204,10 @@
       <trans-unit id="chat.conversationsDescription"><source>Threads started from posts or public profiles appear here.</source><target>Threads started from posts or public profiles appear here.</target></trans-unit>
       <trans-unit id="chat.loadingConversations"><source>Loading conversations...</source><target>Loading conversations...</target></trans-unit>
       <trans-unit id="chat.directConversation"><source>Direct conversation</source><target>Direct conversation</target></trans-unit>
+      <trans-unit id="chat.filters.username"><source>User name</source><target>User name</target></trans-unit>
+      <trans-unit id="chat.filters.usernamePlaceholder"><source>Filter by participant name</source><target>Filter by participant name</target></trans-unit>
+      <trans-unit id="chat.filters.title"><source>Title</source><target>Title</target></trans-unit>
+      <trans-unit id="chat.filters.titlePlaceholder"><source>Filter by post title</source><target>Filter by post title</target></trans-unit>
       <trans-unit id="chat.selectConversation"><source>Select a conversation</source><target>Select a conversation</target></trans-unit>
       <trans-unit id="chat.selectConversationDescription"><source>Choose a thread from the left side or start from a post detail page.</source><target>Choose a thread from the left side or start from a post detail page.</target></trans-unit>
       <trans-unit id="chat.loadingMessages"><source>Loading messages...</source><target>Loading messages...</target></trans-unit>
@@ -208,10 +216,18 @@
       <trans-unit id="chat.emptyActiveDescription"><source>Select a thread or open one from a post detail page to start chatting.</source><target>Select a thread or open one from a post detail page to start chatting.</target></trans-unit>
       <trans-unit id="chat.emptyListTitle"><source>No conversations yet</source><target>No conversations yet</target></trans-unit>
       <trans-unit id="chat.emptyListDescription"><source>Start from a post detail page or a public profile to open a new thread.</source><target>Start from a post detail page or a public profile to open a new thread.</target></trans-unit>
+      <trans-unit id="chat.emptyFilteredTitle"><source>No matching conversations</source><target>No matching conversations</target></trans-unit>
+      <trans-unit id="chat.emptyFilteredDescription"><source>Try a different participant name or title filter.</source><target>Try a different participant name or title filter.</target></trans-unit>
       <trans-unit id="chat.emptyThreadTitle"><source>No messages in this thread</source><target>No messages in this thread</target></trans-unit>
       <trans-unit id="chat.emptyThreadDescription"><source>Say hello, confirm the details, and move the service request forward.</source><target>Say hello, confirm the details, and move the service request forward.</target></trans-unit>
       <trans-unit id="chat.noMessagesYet"><source>No messages yet</source><target>No messages yet</target></trans-unit>
+      <trans-unit id="chat.pagination.summary"><source>Showing {start}-{end} of {total}</source><target>Showing {start}-{end} of {total}</target></trans-unit>
+      <trans-unit id="chat.pagination.empty"><source>No matching results</source><target>No matching results</target></trans-unit>
       <trans-unit id="chat.writeMessage"><source>Write a message...</source><target>Write a message...</target></trans-unit>
+      <trans-unit id="chat.enterToSend"><source>Press Enter to send. Use Shift+Enter for a new line.</source><target>Press Enter to send. Use Shift+Enter for a new line.</target></trans-unit>
+      <trans-unit id="chat.toggleEmojiPicker"><source>Add emoji</source><target>Add emoji</target></trans-unit>
+      <trans-unit id="chat.imageUrlPlaceholder"><source>Paste an image URL to send it in the conversation</source><target>Paste an image URL to send it in the conversation</target></trans-unit>
+      <trans-unit id="chat.clearImage"><source>Remove image</source><target>Remove image</target></trans-unit>
       <trans-unit id="chat.realtime"><source>Realtime: {status}</source><target>Realtime: {status}</target></trans-unit>
       <trans-unit id="chat.sendMessage"><source>Send message</source><target>Send message</target></trans-unit>
       <trans-unit id="chat.connection.idle"><source>Idle</source><target>Idle</target></trans-unit>
@@ -288,6 +304,7 @@
 
       <trans-unit id="postDetail.loadingTitle"><source>Loading post details</source><target>Loading post details</target></trans-unit>
       <trans-unit id="postDetail.loadingDescription"><source>Fetching the latest post data...</source><target>Fetching the latest post data...</target></trans-unit>
+      <trans-unit id="postDetail.routeLocationRequired"><source>Allow location access to draw directions from your current position.</source><target>Allow location access to draw directions from your current position.</target></trans-unit>
       <trans-unit id="postDetail.unavailableTitle"><source>Post not available</source><target>Post not available</target></trans-unit>
       <trans-unit id="postDetail.unavailableDescription"><source>This post could not be loaded.</source><target>This post could not be loaded.</target></trans-unit>
       <trans-unit id="postDetail.eyebrow"><source>Post detail</source><target>Post detail</target></trans-unit>

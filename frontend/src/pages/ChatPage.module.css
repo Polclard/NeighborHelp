@@ -12,6 +12,52 @@
   display: grid;
 }
 
+.toolbar {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin-bottom: 18px;
+}
+
+.filterField {
+  display: grid;
+  gap: 8px;
+}
+
+.filterField span {
+  color: var(--leaf);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.filterField input {
+  min-height: 46px;
+  padding: 0 14px;
+  border-radius: 16px;
+  border: 1px solid rgba(16, 37, 31, 0.12);
+  background: rgba(255, 255, 255, 0.76);
+  color: var(--ink-strong);
+}
+
+.threadCard {
+  height: 100%;
+}
+
+.threadPanel {
+  display: grid;
+  gap: 16px;
+}
+
+.threadViewport {
+  min-height: 26rem;
+  max-height: min(62vh, 52rem);
+  overflow-y: auto;
+  padding-right: 8px;
+  scrollbar-gutter: stable;
+}
+
 .copy,
 .error {
   margin: 0;
@@ -31,3 +77,14 @@
   }
 }
 
+@media (max-width: 720px) {
+  .toolbar {
+    grid-template-columns: 1fr;
+  }
+
+  .threadViewport {
+    min-height: 20rem;
+    max-height: 52vh;
+    padding-right: 4px;
+  }
+}

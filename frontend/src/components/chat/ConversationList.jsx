@@ -5,14 +5,20 @@ import EmptyState from '../ui/EmptyState.jsx'
 import StatusBadge from '../ui/StatusBadge.jsx'
 import styles from './ConversationList.module.css'
 
-function ConversationList({ conversations, activeConversationId, onSelect }) {
+function ConversationList({
+  conversations,
+  activeConversationId,
+  onSelect,
+  emptyTitle,
+  emptyDescription,
+}) {
   const { t } = useI18n()
 
   if (!conversations.length) {
     return (
       <EmptyState
-        title={t('chat.emptyListTitle')}
-        description={t('chat.emptyListDescription')}
+        title={emptyTitle || t('chat.emptyListTitle')}
+        description={emptyDescription || t('chat.emptyListDescription')}
       />
     )
   }
