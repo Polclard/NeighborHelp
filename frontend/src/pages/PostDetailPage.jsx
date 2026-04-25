@@ -25,9 +25,17 @@ import { reportPost } from '../services/api/reportApi.js'
 import { createReview } from '../services/api/reviewApi.js'
 import { useI18n } from '../i18n/useI18n.js'
 import { formatDateTime } from '../utils/formatDateTime.js'
-import { openDirections } from '../utils/openDirections.js'
+import { fetchDirectionsRoute } from '../utils/fetchDirectionsRoute.js'
 import { readApiMessage } from '../utils/readApiMessage.js'
 import styles from './PostDetailPage.module.css'
+
+const createIdleDirectionsState = () => ({
+  coordinates: [],
+  error: null,
+  postId: null,
+  status: 'idle',
+  summary: null,
+})
 
 function PostDetailPage() {
   const dispatch = useAppDispatch()
@@ -45,7 +53,9 @@ function PostDetailPage() {
   const [reviewComment, setReviewComment] = useState('')
   const [reviewRating, setReviewRating] = useState(5)
   const [reviewStatus, setReviewStatus] = useState('idle')
-  const { position, status: locationStatus } = useBrowserLocation(true)
+  const [mapMode, setMapMode] = useState('2d')
+  const [directionsState, setDirectionsState] = useState(createIdleDirectionsState)
+  const { position, requestLocation, status: locationStatus } = useBrowserLocation(true)
 
   useEffect(() => {
     dispatch(clearPostsError())
@@ -125,6 +135,10 @@ function PostDetailPage() {
   const canMessageAuthor = currentUser && currentUser.id !== activePost.userId
   const transitions = isOwner ? getAvailableStatusTransitions(activePost, t) : []
   const postReview = helperReviews.filter((review) => review.postId === activePost.id)
+  const directionsStatus = directionsState.postId === postId ? directionsState.status : 'idle'
+  const directionsCoordinates = directionsState.postId === postId ? directionsState.coordinates : []
+  const directionsError = directionsState.postId === postId ? directionsState.error : null
+  const directionsSummary = directionsState.postId === postId ? directionsState.summary : null
 
   const handleRefreshHelperReviews = async () => {
     if (!activePost.acceptedUserId) {
@@ -138,6 +152,64 @@ function PostDetailPage() {
 
     setHelperProfile(helper)
     setHelperReviews(reviews)
+  }
+
+  const handleToggleDirections = async () => {
+    if (directionsStatus === 'loading') {
+      return
+    }
+
+    if (directionsStatus === 'ready') {
+      setDirectionsState(createIdleDirectionsState())
+      return
+    }
+
+    const origin = locationStatus === 'ready' ? position : await requestLocation()
+
+    if (!origin) {
+      setDirectionsState({
+        coordinates: [],
+        error: t('postDetail.routeLocationRequired'),
+        postId,
+        status: 'error',
+        summary: null,
+      })
+      return
+    }
+
+    setDirectionsState({
+      coordinates: [],
+      error: null,
+      postId,
+      status: 'loading',
+      summary: null,
+    })
+
+    try {
+      const nextRoute = await fetchDirectionsRoute(origin, {
+        latitude: Number(activePost.latitude),
+        longitude: Number(activePost.longitude),
+      })
+
+      setDirectionsState({
+        coordinates: nextRoute.coordinates,
+        error: null,
+        postId,
+        status: 'ready',
+        summary: {
+          distanceKm: nextRoute.distanceKm,
+          durationMinutes: nextRoute.durationMinutes,
+        },
+      })
+    } catch {
+      setDirectionsState({
+        coordinates: [],
+        error: t('map.route.error'),
+        postId,
+        status: 'error',
+        summary: null,
+      })
+    }
   }
 
   return (
@@ -185,24 +257,42 @@ function PostDetailPage() {
                   },
                 ]}
                 center={[Number(activePost.latitude), Number(activePost.longitude)]}
+                mapMode={mapMode}
+                routeCoordinates={directionsCoordinates}
+                routeError={directionsError}
+                routeStatus={directionsStatus}
+                routeSummary={directionsSummary}
                 viewerPosition={locationStatus === 'ready' ? position : null}
                 zoom={15}
               />
               <div className={styles.locationActions}>
+                <div className={styles.modeToggle} role="group" aria-label={t('map.viewMode')}>
+                  <button
+                    type="button"
+                    className={mapMode === '2d' ? `${styles.modeButton} ${styles.modeButtonActive}` : styles.modeButton}
+                    onClick={() => setMapMode('2d')}
+                  >
+                    {t('map.view2d')}
+                  </button>
+                  <button
+                    type="button"
+                    className={mapMode === '3d' ? `${styles.modeButton} ${styles.modeButtonActive}` : styles.modeButton}
+                    onClick={() => setMapMode('3d')}
+                  >
+                    {t('map.view3d')}
+                  </button>
+                </div>
                 <button
                   className={styles.primaryAction}
                   type="button"
-                  onClick={() =>
-                    openDirections(
-                      {
-                        latitude: Number(activePost.latitude),
-                        longitude: Number(activePost.longitude),
-                      },
-                      locationStatus === 'ready' ? position : null,
-                    )
-                  }
+                  disabled={directionsStatus === 'loading'}
+                  onClick={handleToggleDirections}
                 >
-                  {t('common.actions.getDirections')}
+                  {directionsStatus === 'loading'
+                    ? t('common.loading')
+                    : directionsStatus === 'ready'
+                      ? t('common.actions.hideDirections')
+                      : t('common.actions.getDirections')}
                 </button>
               </div>
             </SurfaceCard>

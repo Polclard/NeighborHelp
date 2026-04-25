@@ -2,6 +2,9 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  flex: 0 0 auto;
+  aspect-ratio: 1 / 1;
+  overflow: hidden;
   border-radius: 50%;
   object-fit: cover;
   border: 1px solid rgba(16, 37, 31, 0.12);
@@ -32,4 +35,3 @@
   height: 88px;
   font-size: 1.35rem;
 }
-

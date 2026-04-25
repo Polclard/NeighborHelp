@@ -23,9 +23,9 @@
     left: 50%;
     z-index: 1121;
     width: min(680px, calc(100% - 72px));
-    transform: translateX(-50%);
     display: flex;
     justify-content: center;
+    transform: translateX(-50%);
 }
 
 .searchStack {
@@ -110,6 +110,7 @@
     right: 24px;
     bottom: 24px;
     z-index: 1120;
+    display: flex;
     width: clamp(360px, 32vw, 480px);
     min-height: 0;
     padding: 0;
@@ -117,16 +118,19 @@
 
 .sidebarPanel {
     height: 100%;
+    min-height: 0;
     padding: 24px;
     border-radius: 32px;
     border: 1px solid rgba(255, 255, 255, 0.5);
     background: rgba(255, 250, 241, 0.84);
     backdrop-filter: blur(24px);
     box-shadow: 0 28px 70px rgba(0, 0, 0, 0.18);
-    display: grid;
-    grid-template-rows: auto auto auto auto minmax(0, 1fr);
+    display: flex;
+    flex-direction: column;
     gap: 18px;
     overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-gutter: stable;
 }
 
 .sidebarHeader,
@@ -187,8 +191,11 @@
     align-items: center;
     justify-content: center;
     padding: 12px 16px;
+    border: none;
     border-radius: 999px;
+    cursor: pointer;
     font-weight: 700;
+    text-decoration: none;
 }
 
 .primaryAction {
@@ -222,11 +229,11 @@
 }
 
 .resultsPanel {
-    min-height: 0;
+    flex: 0 0 auto;
     align-content: start;
     padding-top: 22px;
     background: rgba(255, 255, 255, 0.72);
-    overflow: hidden;
+    overflow: visible;
 }
 
 .sectionHeader,

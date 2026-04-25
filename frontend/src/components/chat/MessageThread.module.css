@@ -25,6 +25,19 @@
   margin: 0;
 }
 
+.imageLink {
+  display: block;
+}
+
+.image {
+  display: block;
+  max-width: min(100%, 320px);
+  max-height: 280px;
+  border-radius: 16px;
+  object-fit: cover;
+  box-shadow: 0 10px 20px rgba(16, 37, 31, 0.08);
+}
+
 .message p {
   line-height: 1.6;
 }
@@ -41,4 +54,3 @@
     max-width: 100%;
   }
 }
-

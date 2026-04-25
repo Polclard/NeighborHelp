@@ -1,5 +1,23 @@
 export const defaultMapCenter = [41.9981, 21.4254]
 
+export const mapTileSources = {
+  '2d': {
+    attribution:
+      '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+    detectRetina: true,
+    maxZoom: 19,
+    subdomains: 'abc',
+    url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+  },
+}
+
+export const openFreeMapStyleUrl = 'https://tiles.openfreemap.org/styles/liberty'
+
+export const openFreeMapThreeDView = {
+  bearing: 55.2,
+  pitch: 60,
+}
+
 export const mapPreviewMarkers = [
   {
     id: 'marker-1',

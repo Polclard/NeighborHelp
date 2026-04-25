@@ -38,6 +38,7 @@
       <trans-unit id="common.actions.useCurrentLocation"><source>Use current location</source><target>Користи тековна локација</target></trans-unit>
       <trans-unit id="common.actions.clearLocation"><source>Clear location</source><target>Отстрани локација</target></trans-unit>
       <trans-unit id="common.actions.getDirections"><source>Get directions</source><target>Отвори насоки</target></trans-unit>
+      <trans-unit id="common.actions.hideDirections"><source>Hide directions</source><target>Скриј насоки</target></trans-unit>
       <trans-unit id="common.actions.addMorePhotos"><source>Add more photos</source><target>Додај уште фотографии</target></trans-unit>
       <trans-unit id="common.actions.uploadAvatar"><source>Upload avatar</source><target>Прикачи аватар</target></trans-unit>
       <trans-unit id="common.actions.openMyProfile"><source>Open my profile</source><target>Отвори го мојот профил</target></trans-unit>
@@ -85,6 +86,9 @@
       <trans-unit id="map.viewMode"><source>Map view mode</source><target>Режим на приказ на мапа</target></trans-unit>
       <trans-unit id="map.view2d"><source>2D</source><target>2D</target></trans-unit>
       <trans-unit id="map.view3d"><source>3D</source><target>3D</target></trans-unit>
+      <trans-unit id="map.route.loading"><source>Loading route...</source><target>Се вчитува рута...</target></trans-unit>
+      <trans-unit id="map.route.error"><source>Could not load directions on the map right now.</source><target>Насоките не може да се вчитаат на мапата во моментов.</target></trans-unit>
+      <trans-unit id="map.route.summary"><source>{distance} km, {minutes} min</source><target>{distance} km, {minutes} мин</target></trans-unit>
       <trans-unit id="map.legend.offers"><source>Offers {count}</source><target>Понуди {count}</target></trans-unit>
       <trans-unit id="map.legend.currentPosition"><source>Using your current position</source><target>Се користи твојата тековна локација</target></trans-unit>
       <trans-unit id="map.legend.publicView"><source>Using public city view</source><target>Се користи јавниот приказ на градот</target></trans-unit>
@@ -200,6 +204,10 @@
       <trans-unit id="chat.conversationsDescription"><source>Threads started from posts or public profiles appear here.</source><target>Тука се појавуваат разговорите започнати од објави или јавни профили.</target></trans-unit>
       <trans-unit id="chat.loadingConversations"><source>Loading conversations...</source><target>Се вчитуваат разговорите...</target></trans-unit>
       <trans-unit id="chat.directConversation"><source>Direct conversation</source><target>Директен разговор</target></trans-unit>
+      <trans-unit id="chat.filters.username"><source>User name</source><target>Име на корисник</target></trans-unit>
+      <trans-unit id="chat.filters.usernamePlaceholder"><source>Filter by participant name</source><target>Филтрирај по име на учесник</target></trans-unit>
+      <trans-unit id="chat.filters.title"><source>Title</source><target>Наслов</target></trans-unit>
+      <trans-unit id="chat.filters.titlePlaceholder"><source>Filter by post title</source><target>Филтрирај по наслов на објава</target></trans-unit>
       <trans-unit id="chat.selectConversation"><source>Select a conversation</source><target>Избери разговор</target></trans-unit>
       <trans-unit id="chat.selectConversationDescription"><source>Choose a thread from the left side or start from a post detail page.</source><target>Избери разговор од левата страна или започни од страница со детали за објава.</target></trans-unit>
       <trans-unit id="chat.loadingMessages"><source>Loading messages...</source><target>Се вчитуваат пораките...</target></trans-unit>
@@ -208,10 +216,18 @@
       <trans-unit id="chat.emptyActiveDescription"><source>Select a thread or open one from a post detail page to start chatting.</source><target>Избери разговор или отвори нов од деталите на објава за да започнеш допишување.</target></trans-unit>
       <trans-unit id="chat.emptyListTitle"><source>No conversations yet</source><target>Сѐ уште нема разговори</target></trans-unit>
       <trans-unit id="chat.emptyListDescription"><source>Start from a post detail page or a public profile to open a new thread.</source><target>Започни од страница со детали за објава или јавен профил за да отвориш нов разговор.</target></trans-unit>
+      <trans-unit id="chat.emptyFilteredTitle"><source>No matching conversations</source><target>Нема разговори што одговараат</target></trans-unit>
+      <trans-unit id="chat.emptyFilteredDescription"><source>Try a different participant name or title filter.</source><target>Пробај со друго име на учесник или наслов.</target></trans-unit>
       <trans-unit id="chat.emptyThreadTitle"><source>No messages in this thread</source><target>Нема пораки во разговорот</target></trans-unit>
       <trans-unit id="chat.emptyThreadDescription"><source>Say hello, confirm the details, and move the service request forward.</source><target>Поздрави, потврди ги деталите и придвижи го барањето понатаму.</target></trans-unit>
       <trans-unit id="chat.noMessagesYet"><source>No messages yet</source><target>Сѐ уште нема пораки</target></trans-unit>
+      <trans-unit id="chat.pagination.summary"><source>Showing {start}-{end} of {total}</source><target>Прикажани {start}-{end} од {total}</target></trans-unit>
+      <trans-unit id="chat.pagination.empty"><source>No matching results</source><target>Нема соодветни резултати</target></trans-unit>
       <trans-unit id="chat.writeMessage"><source>Write a message...</source><target>Напиши порака...</target></trans-unit>
+      <trans-unit id="chat.enterToSend"><source>Press Enter to send. Use Shift+Enter for a new line.</source><target>Притисни Enter за испраќање. Користи Shift+Enter за нов ред.</target></trans-unit>
+      <trans-unit id="chat.toggleEmojiPicker"><source>Add emoji</source><target>Додај емоџи</target></trans-unit>
+      <trans-unit id="chat.imageUrlPlaceholder"><source>Paste an image URL to send it in the conversation</source><target>Внеси линк од слика за да ја испратиш во разговорот</target></trans-unit>
+      <trans-unit id="chat.clearImage"><source>Remove image</source><target>Отстрани слика</target></trans-unit>
       <trans-unit id="chat.realtime"><source>Realtime: {status}</source><target>Во живо: {status}</target></trans-unit>
       <trans-unit id="chat.sendMessage"><source>Send message</source><target>Испрати порака</target></trans-unit>
       <trans-unit id="chat.connection.idle"><source>Idle</source><target>Во мирување</target></trans-unit>
@@ -288,6 +304,7 @@
 
       <trans-unit id="postDetail.loadingTitle"><source>Loading post details</source><target>Се вчитуваат деталите за објавата</target></trans-unit>
       <trans-unit id="postDetail.loadingDescription"><source>Fetching the latest post data...</source><target>Се преземаат најновите податоци за објавата...</target></trans-unit>
+      <trans-unit id="postDetail.routeLocationRequired"><source>Allow location access to draw directions from your current position.</source><target>Дозволи пристап до локацијата за да се прикажат насоки од твојата тековна позиција.</target></trans-unit>
       <trans-unit id="postDetail.unavailableTitle"><source>Post not available</source><target>Објавата не е достапна</target></trans-unit>
       <trans-unit id="postDetail.unavailableDescription"><source>This post could not be loaded.</source><target>Оваа објава не можеше да се вчита.</target></trans-unit>
       <trans-unit id="postDetail.eyebrow"><source>Post detail</source><target>Детали за објава</target></trans-unit>

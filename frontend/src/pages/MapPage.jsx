@@ -6,6 +6,7 @@ import PostMap from '../components/posts/PostMap.jsx'
 import EmptyState from '../components/ui/EmptyState.jsx'
 import SpotlightSearch from '../components/ui/SpotlightSearch.jsx'
 import {calculateDistanceKm} from '../utils/calculateDistanceKm.js'
+import {fetchDirectionsRoute} from '../utils/fetchDirectionsRoute.js'
 import {useBrowserLocation} from '../hooks/useBrowserLocation.js'
 import {useAppDispatch} from '../hooks/useAppDispatch.js'
 import {useAppSelector} from '../hooks/useAppSelector.js'
@@ -14,6 +15,14 @@ import {fetchBrowseFeed, postFiltersChanged, selectedPostChanged,} from '../feat
 import {fetchPublicProfile as fetchPublicProfileRequest} from '../services/api/profileApi.js'
 import {useI18n} from '../i18n/useI18n.js'
 import styles from './MapPage.module.css'
+
+const createIdleDirectionsState = () => ({
+    coordinates: [],
+    error: null,
+    postId: null,
+    status: 'idle',
+    summary: null,
+})
 
 function MapPage() {
     const dispatch = useAppDispatch()
@@ -24,8 +33,9 @@ function MapPage() {
         (state) => state.posts,
     )
     const deferredKeyword = useDeferredValue(filters.keyword)
-    const [ownerProfiles, setOwnerProfiles] = useState({})
     const [mapMode, setMapMode] = useState('2d')
+    const [directionsState, setDirectionsState] = useState(createIdleDirectionsState)
+    const [ownerProfiles, setOwnerProfiles] = useState({})
     const {error: locationError, position, requestLocation, status: locationStatus} = useBrowserLocation(true)
     const filterLatitude = filters.location?.latitude ?? null
     const filterLongitude = filters.location?.longitude ?? null
@@ -108,6 +118,10 @@ function MapPage() {
     }, [ownerProfiles, publicItems])
 
     const selectedPost = publicItems.find((post) => post.id === selectedPostId) ?? publicItems[0] ?? null
+    const directionsStatus = selectedPost && directionsState.postId === selectedPost.id ? directionsState.status : 'idle'
+    const directionsCoordinates = selectedPost && directionsState.postId === selectedPost.id ? directionsState.coordinates : []
+    const directionsError = selectedPost && directionsState.postId === selectedPost.id ? directionsState.error : null
+    const directionsSummary = selectedPost && directionsState.postId === selectedPost.id ? directionsState.summary : null
     const selectedOwner = selectedPost ? ownerProfiles[selectedPost.userId] ?? null : null
     const requestCount = publicItems.filter((post) => post.postType === 'SERVICE_REQUEST').length
     const offerCount = publicItems.length - requestCount
@@ -157,6 +171,64 @@ function MapPage() {
         dispatch(mapViewportChanged({center: [nextPosition.latitude, nextPosition.longitude], zoom: 13}))
     }
 
+    const handleToggleDirections = async () => {
+        if (!selectedPost || directionsStatus === 'loading') {
+            return
+        }
+
+        if (directionsStatus === 'ready') {
+            setDirectionsState(createIdleDirectionsState())
+            return
+        }
+
+        const origin = locationStatus === 'ready' ? position : await requestLocation()
+
+        if (!origin) {
+            setDirectionsState({
+                coordinates: [],
+                error: t('postDetail.routeLocationRequired'),
+                postId: selectedPost.id,
+                status: 'error',
+                summary: null,
+            })
+            return
+        }
+
+        setDirectionsState({
+            coordinates: [],
+            error: null,
+            postId: selectedPost.id,
+            status: 'loading',
+            summary: null,
+        })
+
+        try {
+            const nextRoute = await fetchDirectionsRoute(origin, {
+                latitude: Number(selectedPost.latitude),
+                longitude: Number(selectedPost.longitude),
+            })
+
+            setDirectionsState({
+                coordinates: nextRoute.coordinates,
+                error: null,
+                postId: selectedPost.id,
+                status: 'ready',
+                summary: {
+                    distanceKm: nextRoute.distanceKm,
+                    durationMinutes: nextRoute.durationMinutes,
+                },
+            })
+        } catch {
+            setDirectionsState({
+                coordinates: [],
+                error: t('map.route.error'),
+                postId: selectedPost.id,
+                status: 'error',
+                summary: null,
+            })
+        }
+    }
+
     return (
         <div className={styles.page}>
             <div className={styles.mapStage}>
@@ -166,6 +238,10 @@ function MapPage() {
                         center={center}
                         mapMode={mapMode}
                         markerDetails={markerDetails}
+                        routeCoordinates={directionsCoordinates}
+                        routeError={directionsError}
+                        routeStatus={directionsStatus}
+                        routeSummary={directionsSummary}
                         selectedMarkerId={selectedPost?.id ?? null}
                         zoom={zoom}
                         onMarkerSelect={(postId) => {
@@ -189,22 +265,22 @@ function MapPage() {
                             value={filters.keyword}
                         />
 
-                        {/*<div className={styles.modeToggle} role="group" aria-label={t('map.viewMode')}>*/}
-                        {/*  <button*/}
-                        {/*    type="button"*/}
-                        {/*    className={mapMode === '2d' ? `${styles.modeButton} ${styles.modeButtonActive}` : styles.modeButton}*/}
-                        {/*    onClick={() => setMapMode('2d')}*/}
-                        {/*  >*/}
-                        {/*    {t('map.view2d')}*/}
-                        {/*  </button>*/}
-                        {/*  <button*/}
-                        {/*    type="button"*/}
-                        {/*    className={mapMode === '3d' ? `${styles.modeButton} ${styles.modeButtonActive}` : styles.modeButton}*/}
-                        {/*    onClick={() => setMapMode('3d')}*/}
-                        {/*  >*/}
-                        {/*    {t('map.view3d')}*/}
-                        {/*  </button>*/}
-                        {/*</div>*/}
+                        <div className={styles.modeToggle} role="group" aria-label={t('map.viewMode')}>
+                            <button
+                                type="button"
+                                className={mapMode === '2d' ? `${styles.modeButton} ${styles.modeButtonActive}` : styles.modeButton}
+                                onClick={() => setMapMode('2d')}
+                            >
+                                {t('map.view2d')}
+                            </button>
+                            <button
+                                type="button"
+                                className={mapMode === '3d' ? `${styles.modeButton} ${styles.modeButtonActive}` : styles.modeButton}
+                                onClick={() => setMapMode('3d')}
+                            >
+                                {t('map.view3d')}
+                            </button>
+                        </div>
                     </div>
                 </div>
 
@@ -300,6 +376,18 @@ function MapPage() {
                                 <Link className={styles.primaryAction} to={`/posts/${selectedPost.id}`}>
                                     {t('common.actions.openDetails')}
                                 </Link>
+                                <button
+                                    className={styles.secondaryAction}
+                                    type="button"
+                                    disabled={directionsStatus === 'loading'}
+                                    onClick={handleToggleDirections}
+                                >
+                                    {directionsStatus === 'loading'
+                                        ? t('common.loading')
+                                        : directionsStatus === 'ready'
+                                            ? t('common.actions.hideDirections')
+                                            : t('common.actions.getDirections')}
+                                </button>
                                 {selectedOwner ? (
                                     <Link className={styles.secondaryAction} to={`/profiles/${selectedOwner.id}`}>
                                         {t('common.actions.viewProfile')}

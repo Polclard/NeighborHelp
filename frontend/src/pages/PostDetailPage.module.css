@@ -26,8 +26,35 @@
 .sideActions,
 .locationActions {
   display: flex;
+  align-items: center;
   gap: 10px;
   flex-wrap: wrap;
+}
+
+.modeToggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px;
+  border-radius: 999px;
+  background: rgba(16, 37, 31, 0.08);
+}
+
+.modeButton {
+  min-height: 38px;
+  padding: 0 14px;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--ink-soft);
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.modeButtonActive {
+  background: rgba(255, 255, 255, 0.92);
+  color: var(--ink-strong);
+  border-color: rgba(31, 111, 87, 0.16);
 }
 
 .layout {
@@ -124,4 +151,3 @@
     grid-template-columns: 1fr;
   }
 }
-
