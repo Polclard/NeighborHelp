@@ -1,5 +1,6 @@
 package com.neighborhelp.service;
 
+import com.neighborhelp.dto.profile.ChangePasswordRequest;
 import com.neighborhelp.dto.profile.OwnProfileResponse;
 import com.neighborhelp.dto.profile.PublicProfileResponse;
 import com.neighborhelp.dto.profile.UpdateProfileRequest;
@@ -14,6 +15,8 @@ public interface ProfileService {
     OwnProfileResponse getOwnProfile(UUID userId);
 
     OwnProfileResponse updateOwnProfile(UUID userId, UpdateProfileRequest request);
+
+    void changePassword(UUID userId, ChangePasswordRequest request);
 
     PublicProfileResponse getPublicProfile(UUID userId);
 

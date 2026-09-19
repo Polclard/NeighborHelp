@@ -10,6 +10,11 @@ export async function updateOwnProfile(values) {
   return data
 }
 
+export async function changePassword(values) {
+  const { data } = await api.put('/api/users/me/password', values)
+  return data
+}
+
 export async function uploadAvatar(file) {
   const formData = new FormData()
   formData.append('file', file)

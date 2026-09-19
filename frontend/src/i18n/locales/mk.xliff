@@ -294,6 +294,14 @@
       <trans-unit id="profile.summary"><source>{ratingLabel} · {reviewsLabel}</source><target>{ratingLabel} · {reviewsLabel}</target></trans-unit>
       <trans-unit id="profile.email"><source>Email</source><target>Е-пошта</target></trans-unit>
       <trans-unit id="profile.phone"><source>Phone</source><target>Телефон</target></trans-unit>
+      <trans-unit id="profile.password.title"><source>Change password</source><target>Промени ја лозинката</target></trans-unit>
+      <trans-unit id="profile.password.description"><source>Choose a new password for signing in. Saving it signs you out everywhere, so you will need to sign in again.</source><target>Избери нова лозинка за најава. По зачувувањето ќе бидеш одјавен од сите уреди и ќе треба да се најавиш повторно.</target></trans-unit>
+      <trans-unit id="profile.password.current"><source>Current password</source><target>Тековна лозинка</target></trans-unit>
+      <trans-unit id="profile.password.new"><source>New password</source><target>Нова лозинка</target></trans-unit>
+      <trans-unit id="profile.password.confirm"><source>Confirm new password</source><target>Потврди ја новата лозинка</target></trans-unit>
+      <trans-unit id="profile.password.submit"><source>Update password</source><target>Ажурирај лозинка</target></trans-unit>
+      <trans-unit id="profile.password.saving"><source>Updating password...</source><target>Се ажурира лозинката...</target></trans-unit>
+      <trans-unit id="profile.password.signedOutNotice"><source>Your password has been changed. Please sign in again with the new one.</source><target>Лозинката е променета. Најави се повторно со новата лозинка.</target></trans-unit>
 
       <trans-unit id="publicProfile.loadingTitle"><source>Loading profile</source><target>Се вчитува профилот</target></trans-unit>
       <trans-unit id="publicProfile.loadingDescription"><source>Fetching the public profile and its reviews...</source><target>Се вчитува јавниот профил и неговите рецензии...</target></trans-unit>

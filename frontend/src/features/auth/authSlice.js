@@ -12,6 +12,7 @@ const initialState = {
     currentUser: null,
     status: 'anonymous',
     bootstrapStatus: 'idle',
+    notice: null,
     error: null,
 }
 
@@ -23,6 +24,7 @@ function applySession(state, payload) {
     state.accessToken = payload.accessToken
     state.currentUser = payload.user
     state.status = payload.user ? 'authenticated' : 'anonymous'
+    state.notice = null
     state.error = null
 }
 
@@ -71,6 +73,12 @@ const authSlice = createSlice({
         clearAuthError(state) {
             state.error = null
         },
+        setAuthNotice(state, action) {
+            state.notice = action.payload
+        },
+        clearAuthNotice(state) {
+            state.notice = null
+        },
     },
     extraReducers: (builder) => {
         builder
@@ -90,6 +98,7 @@ const authSlice = createSlice({
             })
             .addCase(loginUser.pending, (state) => {
                 state.status = 'loading'
+                state.notice = null
                 state.error = null
             })
             .addCase(loginUser.fulfilled, (state, action) => {
@@ -132,5 +141,5 @@ const authSlice = createSlice({
     },
 })
 
-export const {clearAuthError} = authSlice.actions
+export const {clearAuthError, clearAuthNotice, setAuthNotice} = authSlice.actions
 export default authSlice.reducer
