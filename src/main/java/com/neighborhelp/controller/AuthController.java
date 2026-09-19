@@ -1,6 +1,7 @@
 package com.neighborhelp.controller;
 
 import com.neighborhelp.config.JwtProperties;
+import com.neighborhelp.config.RefreshCookieProperties;
 import com.neighborhelp.dto.auth.AuthResponse;
 import com.neighborhelp.dto.auth.AuthTokens;
 import com.neighborhelp.dto.auth.AuthUserResponse;
@@ -30,10 +31,16 @@ public class AuthController {
 
     private final AuthService authService;
     private final JwtProperties jwtProperties;
+    private final RefreshCookieProperties refreshCookieProperties;
 
-    public AuthController(AuthService authService, JwtProperties jwtProperties) {
+    public AuthController(
+            AuthService authService,
+            JwtProperties jwtProperties,
+            RefreshCookieProperties refreshCookieProperties
+    ) {
         this.authService = authService;
         this.jwtProperties = jwtProperties;
+        this.refreshCookieProperties = refreshCookieProperties;
     }
 
     @PostMapping("/register")
@@ -98,24 +105,24 @@ public class AuthController {
     }
 
     private void addRefreshTokenCookie(HttpServletResponse response, String refreshToken) {
-        ResponseCookie cookie = ResponseCookie.from(REFRESH_TOKEN_COOKIE, refreshToken)
-                .httpOnly(true)
-                .secure(false)
-                .sameSite("Lax")
-                .path("/api/auth")
-                .maxAge(Duration.ofDays(jwtProperties.getRefreshTokenExpirationDays()))
-                .build();
-
-        response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
+        writeRefreshTokenCookie(
+                response,
+                refreshToken,
+                Duration.ofDays(jwtProperties.getRefreshTokenExpirationDays())
+        );
     }
 
     private void clearRefreshTokenCookie(HttpServletResponse response) {
-        ResponseCookie cookie = ResponseCookie.from(REFRESH_TOKEN_COOKIE, "")
+        writeRefreshTokenCookie(response, "", Duration.ZERO);
+    }
+
+    private void writeRefreshTokenCookie(HttpServletResponse response, String value, Duration maxAge) {
+        ResponseCookie cookie = ResponseCookie.from(REFRESH_TOKEN_COOKIE, value)
                 .httpOnly(true)
-                .secure(false)
-                .sameSite("Lax")
+                .secure(refreshCookieProperties.isSecure())
+                .sameSite(refreshCookieProperties.getSameSite())
                 .path("/api/auth")
-                .maxAge(Duration.ZERO)
+                .maxAge(maxAge)
                 .build();
 
         response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
