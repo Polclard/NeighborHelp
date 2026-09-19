@@ -1,5 +1,7 @@
 package com.neighborhelp.controller;
 
+import com.neighborhelp.dto.profile.ChangePasswordRequest;
+import com.neighborhelp.dto.profile.ChangePasswordResponse;
 import com.neighborhelp.dto.profile.OwnProfileResponse;
 import com.neighborhelp.dto.profile.PublicProfileResponse;
 import com.neighborhelp.dto.profile.UpdateProfileRequest;
@@ -43,6 +45,17 @@ public class ProfileController {
     ) {
         AuthenticatedUser user = (AuthenticatedUser) authentication.getPrincipal();
         return profileService.updateOwnProfile(user.getId(), request);
+    }
+
+    @PutMapping("/api/users/me/password")
+    public ChangePasswordResponse changePassword(
+            Authentication authentication,
+            @Valid @RequestBody ChangePasswordRequest request
+    ) {
+        AuthenticatedUser user = (AuthenticatedUser) authentication.getPrincipal();
+        profileService.changePassword(user.getId(), request);
+
+        return new ChangePasswordResponse("Password changed successfully. Please sign in again.");
     }
 
     @PostMapping(value = "/api/users/me/avatar", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)

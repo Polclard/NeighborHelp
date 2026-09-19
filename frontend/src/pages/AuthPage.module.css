@@ -19,6 +19,7 @@
 .title,
 .copy,
 .error,
+.notice,
 .footer {
     margin: 0;
 }
@@ -40,6 +41,14 @@
     border-radius: 16px;
     background: rgba(215, 102, 47, 0.12);
     color: var(--accent-strong);
+}
+
+.notice {
+    margin-top: 16px;
+    padding: 12px 14px;
+    border-radius: 16px;
+    background: rgba(45, 106, 79, 0.12);
+    color: var(--leaf);
 }
 
 .form {

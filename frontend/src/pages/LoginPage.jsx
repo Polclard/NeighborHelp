@@ -14,7 +14,7 @@ function LoginPage() {
     const {t} = useI18n()
     const navigate = useNavigate()
     const location = useLocation()
-    const {currentUser, error, status} = useAppSelector((state) => state.auth)
+    const {currentUser, error, notice, status} = useAppSelector((state) => state.auth)
     const redirectTarget = location.state?.from?.pathname ?? '/profile'
     const schema = yup.object({
         email: yup.string().email(t('auth.validation.emailValid')).required(t('auth.validation.emailRequired')),
@@ -54,6 +54,7 @@ function LoginPage() {
             <p className={styles.kicker}>{t('auth.kicker')}</p>
             <h2 className={styles.title}>{t('auth.login.title')}</h2>
 
+            {notice ? <p className={styles.notice}>{notice}</p> : null}
             {error ? <p className={styles.error}>{error}</p> : null}
 
             <form

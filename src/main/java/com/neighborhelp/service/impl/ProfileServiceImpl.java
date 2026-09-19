@@ -1,22 +1,27 @@
 package com.neighborhelp.service.impl;
 
+import com.neighborhelp.dto.profile.ChangePasswordRequest;
 import com.neighborhelp.dto.profile.OwnProfileResponse;
 import com.neighborhelp.dto.profile.PublicProfileResponse;
 import com.neighborhelp.dto.profile.UpdateProfileRequest;
 import com.neighborhelp.dto.profile.UserReviewResponse;
 import com.neighborhelp.exception.NotFoundException;
+import com.neighborhelp.model.RefreshToken;
 import com.neighborhelp.model.Review;
 import com.neighborhelp.model.User;
+import com.neighborhelp.repository.RefreshTokenRepository;
 import com.neighborhelp.repository.ReviewRepository;
 import com.neighborhelp.repository.UserRepository;
 import com.neighborhelp.service.FileStorageService;
 import com.neighborhelp.service.ProfileService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.time.OffsetDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -32,16 +37,22 @@ public class ProfileServiceImpl implements ProfileService {
 
     private final UserRepository userRepository;
     private final ReviewRepository reviewRepository;
+    private final RefreshTokenRepository refreshTokenRepository;
     private final FileStorageService fileStorageService;
+    private final PasswordEncoder passwordEncoder;
 
     public ProfileServiceImpl(
             UserRepository userRepository,
             ReviewRepository reviewRepository,
-            FileStorageService fileStorageService
+            RefreshTokenRepository refreshTokenRepository,
+            FileStorageService fileStorageService,
+            PasswordEncoder passwordEncoder
     ) {
         this.userRepository = userRepository;
         this.reviewRepository = reviewRepository;
+        this.refreshTokenRepository = refreshTokenRepository;
         this.fileStorageService = fileStorageService;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @Override
@@ -59,6 +70,26 @@ public class ProfileServiceImpl implements ProfileService {
         user.setPhoneNumber(normalizeNullable(request.phoneNumber()));
         user.setBio(normalizeNullable(request.bio()));
         return toOwnProfileResponse(user);
+    }
+
+    @Override
+    public void changePassword(UUID userId, ChangePasswordRequest request) {
+        User user = getActiveUser(userId);
+
+        if (!passwordEncoder.matches(request.currentPassword(), user.getPasswordHash())) {
+            throw new IllegalArgumentException("Current password is incorrect");
+        }
+
+        if (!request.newPassword().equals(request.confirmPassword())) {
+            throw new IllegalArgumentException("Passwords do not match");
+        }
+
+        if (passwordEncoder.matches(request.newPassword(), user.getPasswordHash())) {
+            throw new IllegalArgumentException("New password must be different from the current password");
+        }
+
+        user.setPasswordHash(passwordEncoder.encode(request.newPassword()));
+        revokeActiveRefreshTokens(userId);
     }
 
     @Override
@@ -117,6 +148,14 @@ public class ProfileServiceImpl implements ProfileService {
                     );
                 })
                 .toList();
+    }
+
+    private void revokeActiveRefreshTokens(UUID userId) {
+        OffsetDateTime now = OffsetDateTime.now();
+
+        for (RefreshToken token : refreshTokenRepository.findAllByUserIdAndRevokedAtIsNull(userId)) {
+            token.setRevokedAt(now);
+        }
     }
 
     private User getActiveUser(UUID userId) {

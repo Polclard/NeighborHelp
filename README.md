@@ -155,7 +155,13 @@ Only one superuser will be created at the beginning  and he can change in the (a
 - The image is stored on the server filesystem or in an object store (S3-compatible in Phase 2). For now we can store it in the database.
 - A default avatar is shown if no picture is uploaded.
 
-#### FR-PROFILE-04: Account Deactivation
+#### FR-PROFILE-04: Change Password
+- A signed-in user can change their own password from their profile.
+- The request requires the current password, the new password, and a confirmation of the new password.
+- The new password must be at least 8 characters and different from the current one.
+- The new password is hashed with BCrypt, and every refresh token of that user is revoked, so all sessions have to sign in again.
+
+#### FR-PROFILE-05: Account Deactivation
 - A user can request deletion of their account.
 - All their posts are anonymized (not deleted, to preserve service history integrity). Their chat messages may be soft-deleted.
 
@@ -786,6 +792,7 @@ All endpoints are prefixed with `/api`. Protected endpoints require `Authorizati
 |---|---|---|---|
 | GET | `/api/users/me` | User | Get own profile |
 | PUT | `/api/users/me` | User | Update own profile |
+| PUT | `/api/users/me/password` | User | Change own password |
 | POST | `/api/users/me/avatar` | User | Upload profile picture |
 | GET | `/api/users/{id}` | User | Get any user's public profile |
 | GET | `/api/users/{id}/reviews` | User | Get reviews for a user |

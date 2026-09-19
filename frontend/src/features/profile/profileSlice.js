@@ -1,5 +1,6 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit'
 import {
+  changePassword as changePasswordRequest,
   fetchOwnProfile as fetchOwnProfileRequest,
   fetchPublicProfile as fetchPublicProfileRequest,
   fetchUserReviews as fetchUserReviewsRequest,
@@ -17,6 +18,8 @@ const initialState = {
   reviewsStatus: 'idle',
   saveStatus: 'idle',
   avatarStatus: 'idle',
+  passwordStatus: 'idle',
+  passwordError: null,
   error: null,
 }
 
@@ -38,6 +41,17 @@ export const updateOwnProfile = createAsyncThunk(
       return await updateOwnProfileRequest(values)
     } catch (error) {
       return rejectWithValue(buildApiErrorPayload(error, 'Profile could not be updated'))
+    }
+  },
+)
+
+export const changePassword = createAsyncThunk(
+  'profile/changePassword',
+  async (values, { rejectWithValue }) => {
+    try {
+      return await changePasswordRequest(values)
+    } catch (error) {
+      return rejectWithValue(buildApiErrorPayload(error, 'Password could not be changed'))
     }
   },
 )
@@ -81,6 +95,7 @@ const profileSlice = createSlice({
   reducers: {
     clearProfileError(state) {
       state.error = null
+      state.passwordError = null
     },
     clearPublicProfile(state) {
       state.publicProfile = null
@@ -92,6 +107,7 @@ const profileSlice = createSlice({
       .addCase(fetchOwnProfile.pending, (state) => {
         state.ownStatus = 'loading'
         state.error = null
+        state.passwordError = null
       })
       .addCase(fetchOwnProfile.fulfilled, (state, action) => {
         state.ownStatus = 'ready'
@@ -112,6 +128,17 @@ const profileSlice = createSlice({
       .addCase(updateOwnProfile.rejected, (state, action) => {
         state.saveStatus = 'error'
         state.error = action.payload?.message ?? 'Profile could not be updated'
+      })
+      .addCase(changePassword.pending, (state) => {
+        state.passwordStatus = 'loading'
+        state.passwordError = null
+      })
+      .addCase(changePassword.fulfilled, (state) => {
+        state.passwordStatus = 'ready'
+      })
+      .addCase(changePassword.rejected, (state, action) => {
+        state.passwordStatus = 'error'
+        state.passwordError = action.payload?.message ?? 'Password could not be changed'
       })
       .addCase(uploadAvatar.pending, (state) => {
         state.avatarStatus = 'loading'

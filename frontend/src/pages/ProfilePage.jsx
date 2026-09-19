@@ -4,7 +4,14 @@ import ProfileSummaryCard from '../components/profile/ProfileSummaryCard.jsx'
 import ReviewList from '../components/reviews/ReviewList.jsx'
 import FormField from '../components/ui/FormField.jsx'
 import SurfaceCard from '../components/ui/SurfaceCard.jsx'
-import { fetchProfileReviews, fetchOwnProfile, updateOwnProfile, uploadAvatar } from '../features/profile/profileSlice.js'
+import { logoutUser, setAuthNotice } from '../features/auth/authSlice.js'
+import {
+  changePassword,
+  fetchProfileReviews,
+  fetchOwnProfile,
+  updateOwnProfile,
+  uploadAvatar,
+} from '../features/profile/profileSlice.js'
 import { useAppDispatch } from '../hooks/useAppDispatch.js'
 import { useAppSelector } from '../hooks/useAppSelector.js'
 import { useI18n } from '../i18n/useI18n.js'
@@ -14,9 +21,17 @@ function ProfilePage() {
   const dispatch = useAppDispatch()
   const { t } = useI18n()
   const { currentUser } = useAppSelector((state) => state.auth)
-  const { avatarStatus, error, ownProfile, ownStatus, reviews, reviewsStatus, saveStatus } = useAppSelector(
-    (state) => state.profile,
-  )
+  const {
+    avatarStatus,
+    error,
+    ownProfile,
+    ownStatus,
+    passwordError,
+    passwordStatus,
+    reviews,
+    reviewsStatus,
+    saveStatus,
+  } = useAppSelector((state) => state.profile)
 
   useEffect(() => {
     dispatch(fetchOwnProfile())
@@ -91,6 +106,16 @@ function ProfilePage() {
           />
         </SurfaceCard>
       </div>
+
+      <SurfaceCard
+        eyebrow={t('nav.profile')}
+        title={t('profile.password.title')}
+        description={t('profile.password.description')}
+      >
+        {passwordError ? <p className={styles.error}>{passwordError}</p> : null}
+
+        <ChangePasswordForm dispatch={dispatch} passwordStatus={passwordStatus} />
+      </SurfaceCard>
 
       <SurfaceCard
         title={t('profile.reviewsTitle')}
@@ -170,6 +195,75 @@ function ProfileForm({ dispatch, profile, saveStatus }) {
 
       <button className={styles.primaryAction} type="submit" disabled={saveStatus === 'loading'}>
         {saveStatus === 'loading' ? t('profile.saving') : t('common.actions.saveProfile')}
+      </button>
+    </form>
+  )
+}
+
+function ChangePasswordForm({ dispatch, passwordStatus }) {
+  const { t } = useI18n()
+  const [formValues, setFormValues] = useState({
+    currentPassword: '',
+    newPassword: '',
+    confirmPassword: '',
+  })
+  const [validationErrors, setValidationErrors] = useState({})
+
+  return (
+    <form
+      className={styles.form}
+      onSubmit={async (event) => {
+        event.preventDefault()
+        setValidationErrors({})
+
+        if (formValues.newPassword !== formValues.confirmPassword) {
+          setValidationErrors({ confirmPassword: t('auth.validation.passwordsMismatch') })
+          return
+        }
+
+        try {
+          await dispatch(changePassword(formValues)).unwrap()
+        } catch (requestError) {
+          setValidationErrors(requestError?.validationErrors ?? {})
+          return
+        }
+
+        // Changing the password revokes every session, so the user signs in again with the new one.
+        dispatch(setAuthNotice(t('profile.password.signedOutNotice')))
+        dispatch(logoutUser())
+      }}
+    >
+      <FormField label={t('profile.password.current')} error={validationErrors.currentPassword}>
+        <input
+          type="password"
+          autoComplete="current-password"
+          value={formValues.currentPassword}
+          onChange={(event) => setFormValues((current) => ({ ...current, currentPassword: event.target.value }))}
+        />
+      </FormField>
+
+      <div className={styles.row}>
+        <FormField label={t('profile.password.new')} error={validationErrors.newPassword}>
+          <input
+            type="password"
+            autoComplete="new-password"
+            value={formValues.newPassword}
+            onChange={(event) => setFormValues((current) => ({ ...current, newPassword: event.target.value }))}
+          />
+        </FormField>
+
+        <FormField label={t('profile.password.confirm')} error={validationErrors.confirmPassword}>
+          <input
+            type="password"
+            autoComplete="new-password"
+            value={formValues.confirmPassword}
+            onChange={(event) => setFormValues((current) => ({ ...current, confirmPassword: event.target.value }))}
+          />
+        </FormField>
+      </div>
+
+      <button className={styles.primaryAction} type="submit" disabled={passwordStatus === 'loading'}>
+        {passwordStatus === 'loading' ? t('profile.password.saving') : t('profile.password.submit')}
       </button>
     </form>
   )

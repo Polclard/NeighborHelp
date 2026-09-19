@@ -9,6 +9,7 @@
 @userAEmail = smoke-a-{{suffix}}@example.com
 @userBEmail = smoke-b-{{suffix}}@example.com
 @userPassword = Password123!
+@userNewPassword = NewPassword456!
 @avatarFile = /absolute/path/to/avatar.png
 @postPhotoFile = /absolute/path/to/post-photo.png
 @invalidFile = /absolute/path/to/not-an-image.txt
@@ -130,6 +131,56 @@ Content-Type: {{json}}
   "phoneNumber": "+38970999999",
   "bio": "Helping in the neighborhood."
 }
+
+### Profile - Change password with wrong current password should return 400
+PUT {{baseUrl}}/api/users/me/password
+Authorization: Bearer {{userAAccessToken}}
+Content-Type: {{json}}
+
+{
+  "currentPassword": "WrongPassword123!",
+  "newPassword": "{{userNewPassword}}",
+  "confirmPassword": "{{userNewPassword}}"
+}
+
+### Profile - Change own password user A
+PUT {{baseUrl}}/api/users/me/password
+Authorization: Bearer {{userAAccessToken}}
+Content-Type: {{json}}
+
+{
+  "currentPassword": "{{userPassword}}",
+  "newPassword": "{{userNewPassword}}",
+  "confirmPassword": "{{userNewPassword}}"
+}
+
+### Profile - Restore original password user A
+PUT {{baseUrl}}/api/users/me/password
+Authorization: Bearer {{userAAccessToken}}
+Content-Type: {{json}}
+
+{
+  "currentPassword": "{{userNewPassword}}",
+  "newPassword": "{{userPassword}}",
+  "confirmPassword": "{{userPassword}}"
+}
+
+### Auth - Login user A again (password changes revoke every refresh token)
+POST {{baseUrl}}/api/auth/login
+Content-Type: {{json}}
+
+{
+  "email": "{{userAEmail}}",
+  "password": "{{userPassword}}"
+}
+
+> {%
+    client.global.set("userAAccessToken", response.body.accessToken);
+    const cookies = response.headers.valuesOf("Set-Cookie");
+    if (cookies.length > 0) {
+        client.global.set("userARefreshCookie", cookies[0].split(";")[0]);
+    }
+%}
 
 ### Profile - Upload avatar user A
 # @name uploadAvatarUserA
