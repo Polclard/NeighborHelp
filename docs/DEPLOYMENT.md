@@ -37,7 +37,11 @@ on first boot by Flyway.
 | `JWT_SECRET` | 32+ random characters | Generate with `openssl rand -base64 48` |
 | `APP_CORS_ALLOWED_ORIGINS` | `https://your-app.vercel.app` | Exact origin, no trailing slash |
 | `APP_WEBSOCKET_ALLOWED_ORIGINS` | `https://your-app.vercel.app` | Same value |
-| `APP_UPLOAD_DIR` | `/var/neighborhelp/uploads` | Mount a persistent volume here |
+| `APP_STORAGE_PROVIDER` | `cloudinary` | See [Image storage](#image-storage). `local` needs a persistent volume |
+| `CLOUDINARY_CLOUD_NAME` | your cloud name | Required when the provider is `cloudinary` |
+| `CLOUDINARY_API_KEY` | your API key | Required when the provider is `cloudinary` |
+| `CLOUDINARY_API_SECRET` | your API secret | Required when the provider is `cloudinary` |
+| `APP_UPLOAD_DIR` | `/var/neighborhelp/uploads` | Only for `APP_STORAGE_PROVIDER=local`; mount a persistent volume |
 | `OPENROUTESERVICE_API_KEY` | your key | Optional; only used for routing |
 | `SERVER_PORT` | provider's port | Only if the host does not use 8080 |
 
@@ -111,12 +115,64 @@ stable staging domain at the preview and allow only that.
 
 ---
 
+## Image storage
+
+`app.storage.provider` selects where avatars and post photos go.
+
+| Provider | Behaviour |
+| --- | --- |
+| `local` (default) | Writes to `app.upload.dir` and serves the files from `/uploads/**`. Fine for development. On a host without a persistent volume **every redeploy deletes all uploads**. |
+| `cloudinary` | Uploads to Cloudinary and stores the returned delivery URL. Survives redeploys and serves the images over Cloudinary's CDN. |
+
+Use `cloudinary` in production unless you have a real persistent volume.
+
+### Setting up Cloudinary
+
+1. Create a free account at <https://cloudinary.com/users/register_free>.
+2. Copy **Cloud Name**, **API Key** and **API Secret** from the dashboard.
+3. Set them on the backend host:
+
+   ```
+   APP_STORAGE_PROVIDER=cloudinary
+   CLOUDINARY_CLOUD_NAME=your-cloud-name
+   CLOUDINARY_API_KEY=123456789012345
+   CLOUDINARY_API_SECRET=your-api-secret
+   ```
+
+   The secret is server-side only — the browser never sees it, because uploads
+   go through the existing authenticated endpoints rather than direct from the
+   client.
+
+`CLOUDINARY_FOLDER` (default `neighborhelp`) prefixes every stored asset, so one
+Cloudinary account can host several environments without them colliding.
+
+### Image sizes
+
+The backend stores one untransformed URL per image. The frontend appends a
+Cloudinary transformation matching the size the component actually renders —
+see `avatarTransform` / `galleryTransform` / `chatImageTransform` in
+`frontend/src/utils/buildUploadUrl.js`. Those helpers are no-ops for
+non-Cloudinary URLs, so the `local` provider keeps working unchanged.
+
+Keep the size list short. Cloudinary's free tier counts each distinct
+transformation once when it is first generated, so a fixed set of sizes costs a
+bounded number of transformations no matter how much traffic the images get.
+
+### Switching providers
+
+The two providers are mutually exclusive and are chosen at startup by
+`@ConditionalOnProperty`. Switching does not rewrite existing rows: values
+already stored under one provider will not resolve under the other. There is no
+backfill, so switch before the app has uploads worth keeping.
+
+---
+
 ## What is deliberately not solved here
 
-- **Uploaded photos live on the backend's local disk.** `APP_UPLOAD_DIR` must be
-  a mounted persistent volume, or every redeploy deletes the users' post photos
-  and avatars. Moving `LocalFileStorageService` to S3, Cloudflare R2 or
-  Cloudinary is the durable fix and is a separate piece of work.
+- **Chat message images are not uploaded.** `SendMessageRequest.imageUrl` takes
+  an arbitrary client-supplied URL rather than a file, so those images are not
+  stored by the app at all. Unlike avatars and post photos, they never reach
+  `FileStorageService`.
 - **Migration `V10` seeds an admin account** (`admin@neighborhelp.local`) with a
   password hash committed to the repository. Change that password immediately
   after the first deploy, or the account is public.

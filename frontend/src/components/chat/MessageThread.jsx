@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react'
 import { useI18n } from '../../i18n/useI18n.js'
-import { buildUploadUrl } from '../../utils/buildUploadUrl.js'
+import { buildUploadUrl, chatImageTransform } from '../../utils/buildUploadUrl.js'
 import { formatDateTime } from '../../utils/formatDateTime.js'
 import EmptyState from '../ui/EmptyState.jsx'
 import styles from './MessageThread.module.css'
@@ -27,6 +27,8 @@ function MessageThread({ messages, currentUserId }) {
       {messages.map((message) => {
         const isOwnMessage = message.senderId === currentUserId
         const imageUrl = buildUploadUrl(message.imageUrl)
+        // Thumbnail in the thread; the link still opens the full-size image.
+        const imageThumbnailUrl = buildUploadUrl(message.imageUrl, chatImageTransform())
 
         return (
           <article
@@ -35,7 +37,12 @@ function MessageThread({ messages, currentUserId }) {
           >
             {imageUrl ? (
               <a className={styles.imageLink} href={imageUrl} target="_blank" rel="noreferrer">
-                <img className={styles.image} src={imageUrl} alt={t('common.imageAttachment')} />
+                <img
+                  className={styles.image}
+                  src={imageThumbnailUrl}
+                  alt={t('common.imageAttachment')}
+                  loading="lazy"
+                />
               </a>
             ) : null}
             {message.content ? <p>{message.content}</p> : null}

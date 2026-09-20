@@ -1,4 +1,4 @@
-import { buildUploadUrl } from '../../utils/buildUploadUrl.js'
+import { buildUploadUrl, galleryTransform } from '../../utils/buildUploadUrl.js'
 import { useI18n } from '../../i18n/useI18n.js'
 import EmptyState from '../ui/EmptyState.jsx'
 import styles from './PostPhotoGallery.module.css'
@@ -19,7 +19,11 @@ function PostPhotoGallery({ photos, editable = false, onRemove = null, removingP
     <div className={styles.gallery}>
       {photos.map((photo) => (
         <figure key={photo.id} className={styles.item}>
-          <img src={buildUploadUrl(photo.filePath)} alt={t('postPhotoGallery.imageAlt')} />
+          <img
+            src={buildUploadUrl(photo.filePath, galleryTransform())}
+            alt={t('postPhotoGallery.imageAlt')}
+            loading="lazy"
+          />
           {editable && onRemove ? (
             <button
               className={styles.remove}
