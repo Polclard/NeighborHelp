@@ -1,8 +1,8 @@
-import { buildUploadUrl } from '../../utils/buildUploadUrl.js'
+import { avatarTransform, buildUploadUrl } from '../../utils/buildUploadUrl.js'
 import styles from './AvatarBadge.module.css'
 
 function AvatarBadge({ src, name, size = 'medium' }) {
-  const imageUrl = buildUploadUrl(src)
+  const imageUrl = buildUploadUrl(src, avatarTransform(size))
   const initials = createInitials(name)
 
   if (imageUrl) {
