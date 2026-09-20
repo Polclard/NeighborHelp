@@ -1,6 +1,17 @@
 import {useEffect} from 'react'
 import {Link} from 'react-router-dom'
-import {AttributionControl, CircleMarker, MapContainer, Polyline, Popup, TileLayer, Tooltip, useMap, useMapEvents, ZoomControl} from 'react-leaflet'
+import {
+    AttributionControl,
+    CircleMarker,
+    MapContainer,
+    Polyline,
+    Popup,
+    TileLayer,
+    Tooltip,
+    useMap,
+    useMapEvents,
+    ZoomControl
+} from 'react-leaflet'
 import {defaultMapCenter, mapTileSources} from '../../constants/map.js'
 import {formatPostStatus, formatPostType} from '../../constants/posts.js'
 import {useI18n} from '../../i18n/useI18n.js'
@@ -104,7 +115,8 @@ function LeafletPostMap({
         .join(' ')
 
     return (
-        <MapContainer center={center} zoom={zoom} className={mapClassName} scrollWheelZoom preferCanvas zoomControl={false} attributionControl={false}>
+        <MapContainer center={center} zoom={zoom} className={mapClassName} scrollWheelZoom preferCanvas
+                      zoomControl={false} attributionControl={false}>
             <TileLayer
                 attribution={tileSource.attribution}
                 detectRetina={tileSource.detectRetina}
@@ -282,7 +294,7 @@ function MarkerInfoCard({detail, marker}) {
             </div>
 
             <h3>{marker.title}</h3>
-            <p>{detail.description || marker.category}</p>
+            <p>{detail.description.length < 100 ? detail.description : detail.description.slice(0, 100) + "..." || marker.category}</p>
 
             <div className={styles.infoOwner}>
         <span className={styles.infoAvatar} style={avatarStyle}>
