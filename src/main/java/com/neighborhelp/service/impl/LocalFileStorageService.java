@@ -1,9 +1,6 @@
 package com.neighborhelp.service.impl;
 
 import com.neighborhelp.service.FileStorageService;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -13,14 +10,15 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.UUID;
 
-@Service
-@ConditionalOnProperty(name = "app.storage.provider", havingValue = "local", matchIfMissing = true)
 public class LocalFileStorageService implements FileStorageService {
 
     private static final String PUBLIC_UPLOAD_PREFIX = "/uploads/";
 
-    @Value("${app.upload.dir:./var/uploads}")
-    private String uploadDir;
+    private final String uploadDir;
+
+    public LocalFileStorageService(String uploadDir) {
+        this.uploadDir = uploadDir;
+    }
 
     @Override
     public String storeProfileAvatar(UUID userId, MultipartFile file) {

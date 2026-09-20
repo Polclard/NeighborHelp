@@ -4,8 +4,6 @@ import com.cloudinary.Cloudinary;
 import com.cloudinary.utils.ObjectUtils;
 import com.neighborhelp.config.CloudinaryProperties;
 import com.neighborhelp.service.FileStorageService;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -23,8 +21,6 @@ import java.util.regex.Pattern;
  * resizing is applied by the frontend, which injects a transformation segment
  * into the URL, so a single stored value serves every rendered size.
  */
-@Service
-@ConditionalOnProperty(name = "app.storage.provider", havingValue = "cloudinary")
 public class CloudinaryFileStorageService implements FileStorageService {
 
     private static final String UPLOAD_MARKER = "/image/upload/";

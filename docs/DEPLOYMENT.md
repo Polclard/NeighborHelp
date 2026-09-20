@@ -37,11 +37,11 @@ on first boot by Flyway.
 | `JWT_SECRET` | 32+ random characters | Generate with `openssl rand -base64 48` |
 | `APP_CORS_ALLOWED_ORIGINS` | `https://your-app.vercel.app` | Exact origin, no trailing slash |
 | `APP_WEBSOCKET_ALLOWED_ORIGINS` | `https://your-app.vercel.app` | Same value |
-| `APP_STORAGE_PROVIDER` | `cloudinary` | See [Image storage](#image-storage). `local` needs a persistent volume |
-| `CLOUDINARY_CLOUD_NAME` | your cloud name | Required when the provider is `cloudinary` |
-| `CLOUDINARY_API_KEY` | your API key | Required when the provider is `cloudinary` |
-| `CLOUDINARY_API_SECRET` | your API secret | Required when the provider is `cloudinary` |
-| `APP_UPLOAD_DIR` | `/var/neighborhelp/uploads` | Only for `APP_STORAGE_PROVIDER=local`; mount a persistent volume |
+| `CLOUDINARY_CLOUD_NAME` | your cloud name | Setting all three selects Cloudinary automatically |
+| `CLOUDINARY_API_KEY` | your API key | |
+| `CLOUDINARY_API_SECRET` | your API secret | |
+| `APP_STORAGE_PROVIDER` | *(leave unset)* | Only to force `local` or `cloudinary`; see [Image storage](#image-storage) |
+| `APP_UPLOAD_DIR` | `/var/neighborhelp/uploads` | Only when storage resolves to local; mount a persistent volume |
 | `OPENROUTESERVICE_API_KEY` | your key | Optional; only used for routing |
 | `SERVER_PORT` | provider's port | Only if the host does not use 8080 |
 
@@ -117,7 +117,8 @@ stable staging domain at the preview and allow only that.
 
 ## Image storage
 
-`app.storage.provider` selects where avatars and post photos go.
+`app.storage.provider` selects where avatars and post photos go. **You normally
+do not set it** — supplying the Cloudinary credentials is enough.
 
 | Provider | Behaviour |
 | --- | --- |
@@ -133,11 +134,13 @@ Use `cloudinary` in production unless you have a real persistent volume.
 3. Set them on the backend host:
 
    ```
-   APP_STORAGE_PROVIDER=cloudinary
    CLOUDINARY_CLOUD_NAME=your-cloud-name
    CLOUDINARY_API_KEY=123456789012345
    CLOUDINARY_API_SECRET=your-api-secret
    ```
+
+   That is all. `APP_STORAGE_PROVIDER` does not need to be set: when all three
+   credentials are present Cloudinary is selected automatically.
 
    The secret is server-side only — the browser never sees it, because uploads
    go through the existing authenticated endpoints rather than direct from the
@@ -158,12 +161,47 @@ Keep the size list short. Cloudinary's free tier counts each distinct
 transformation once when it is first generated, so a fixed set of sizes costs a
 bounded number of transformations no matter how much traffic the images get.
 
-### Switching providers
+### How the provider is chosen
 
-The two providers are mutually exclusive and are chosen at startup by
-`@ConditionalOnProperty`. Switching does not rewrite existing rows: values
-already stored under one provider will not resolve under the other. There is no
-backfill, so switch before the app has uploads worth keeping.
+Resolved once at startup; exactly one implementation is always created.
+
+| `APP_STORAGE_PROVIDER` | Cloudinary credentials | Result |
+| --- | --- | --- |
+| unset or blank | all three present | `cloudinary` |
+| unset or blank | missing or partial | `local` |
+| `cloudinary` | all three present | `cloudinary` |
+| `cloudinary` | missing | startup fails, naming the variable |
+| `local` | either | `local` (explicit override wins) |
+| anything else | either | startup fails, listing valid values |
+
+Matching is case-insensitive and surrounding whitespace is ignored.
+
+The startup log always states the choice, so the running configuration is
+visible without opening a dashboard:
+
+```
+Image storage: Cloudinary (cloud 'your-cloud-name', folder 'neighborhelp')
+```
+
+If it resolved to local, the log carries a warning instead:
+
+```
+WARN  Image storage: local disk at './var/uploads'. Uploads do NOT survive a
+      redeploy unless this is a persistent volume. Set CLOUDINARY_CLOUD_NAME /
+      CLOUDINARY_API_KEY / CLOUDINARY_API_SECRET to store images in Cloudinary
+      instead.
+```
+
+Two misconfigurations fail fast at startup with a message naming the fix:
+
+- an unrecognised provider — `Unknown app.storage.provider 's3'. Expected one
+  of: local, cloudinary`
+- `cloudinary` selected with a credential missing — `CLOUDINARY_CLOUD_NAME must
+  be set when app.storage.provider=cloudinary`
+
+Switching does not rewrite existing rows: values already stored under one
+provider will not resolve under the other. There is no backfill, so switch
+before the app has uploads worth keeping.
 
 ---
 
