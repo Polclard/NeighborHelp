@@ -79,7 +79,7 @@ function OpenFreeMapScene({
                     id: marker.id,
                     properties: {
                         category: marker.category || '',
-                        detailText: detail?.description || marker.category || '',
+                        detailText: detail.description.length < 100 ? detail.description : detail.description.slice(0, 100) + "..." || marker.category || '',
                         id: marker.id,
                         metaText,
                         ownerAvatar: detail?.ownerAvatar || '',
