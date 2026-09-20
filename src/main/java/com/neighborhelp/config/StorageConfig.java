@@ -4,6 +4,7 @@ import com.cloudinary.Cloudinary;
 import com.neighborhelp.service.FileStorageService;
 import com.neighborhelp.service.impl.CloudinaryFileStorageService;
 import com.neighborhelp.service.impl.LocalFileStorageService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -21,6 +22,7 @@ import java.util.Map;
  * over the resolved enum always yields exactly one implementation, or a failure
  * that says what is wrong.
  */
+@Slf4j
 @Configuration
 @EnableConfigurationProperties(StorageProperties.class)
 public class StorageConfig {
@@ -30,12 +32,22 @@ public class StorageConfig {
             StorageProperties properties,
             @Value("${app.upload.dir:./var/uploads}") String uploadDir
     ) {
+        CloudinaryProperties cloudinaryProperties = properties.getCloudinary();
+
         return switch (properties.resolveProvider()) {
-            case LOCAL -> new LocalFileStorageService(uploadDir);
-            case CLOUDINARY -> new CloudinaryFileStorageService(
-                    cloudinary(properties.getCloudinary()),
-                    properties.getCloudinary()
-            );
+            case LOCAL -> {
+                // Say so loudly: this is the configuration that quietly loses
+                // every upload on the next redeploy.
+                log.warn("Image storage: local disk at '{}'. Uploads do NOT survive a redeploy unless this is a "
+                        + "persistent volume. Set CLOUDINARY_CLOUD_NAME / CLOUDINARY_API_KEY / CLOUDINARY_API_SECRET "
+                        + "to store images in Cloudinary instead.", uploadDir);
+                yield new LocalFileStorageService(uploadDir);
+            }
+            case CLOUDINARY -> {
+                log.info("Image storage: Cloudinary (cloud '{}', folder '{}')",
+                        cloudinaryProperties.getCloudName(), cloudinaryProperties.getFolder());
+                yield new CloudinaryFileStorageService(cloudinary(cloudinaryProperties), cloudinaryProperties);
+            }
         };
     }
 

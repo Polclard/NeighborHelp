@@ -31,7 +31,10 @@ app:
   storage:
     # "local" writes to app.upload.dir and serves /uploads/**; "cloudinary"
     # uploads to Cloudinary and stores the delivery URL instead.
-    provider: ${APP_STORAGE_PROVIDER:local}
+    #
+    # Leave unset to auto-select: Cloudinary when its credentials are present,
+    # otherwise local. Set it explicitly to override that.
+    provider: ${APP_STORAGE_PROVIDER:}
     cloudinary:
       cloud-name: ${CLOUDINARY_CLOUD_NAME:}
       api-key: ${CLOUDINARY_API_KEY:}

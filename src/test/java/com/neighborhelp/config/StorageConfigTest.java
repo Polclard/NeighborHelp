@@ -62,6 +62,34 @@ class StorageConfigTest {
     }
 
     @Test
+    void credentialsAloneSelectCloudinaryWithoutTheProviderFlag() {
+        contextRunner
+                .withPropertyValues(cloudinaryProperties(""))
+                .run(context -> assertThat(context)
+                        .hasSingleBean(FileStorageService.class)
+                        .getBean(FileStorageService.class)
+                        .isInstanceOf(CloudinaryFileStorageService.class));
+    }
+
+    @Test
+    void partialCredentialsDoNotSelectCloudinary() {
+        contextRunner
+                .withPropertyValues("app.storage.cloudinary.cloud-name=demo")
+                .run(context -> assertThat(context)
+                        .getBean(FileStorageService.class)
+                        .isInstanceOf(LocalFileStorageService.class));
+    }
+
+    @Test
+    void explicitLocalOverridesPresentCredentials() {
+        contextRunner
+                .withPropertyValues(cloudinaryProperties("local"))
+                .run(context -> assertThat(context)
+                        .getBean(FileStorageService.class)
+                        .isInstanceOf(LocalFileStorageService.class));
+    }
+
+    @Test
     void usesCloudinaryWhenSelectedWithCredentials() {
         contextRunner
                 .withPropertyValues(cloudinaryProperties("cloudinary"))

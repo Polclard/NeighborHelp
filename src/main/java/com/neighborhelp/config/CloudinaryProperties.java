@@ -25,4 +25,12 @@ public class CloudinaryProperties {
      */
     private String folder = "neighborhelp";
 
+    /** True when all three credentials are present, i.e. Cloudinary is usable. */
+    public boolean isConfigured() {
+        return isSet(cloudName) && isSet(apiKey) && isSet(apiSecret);
+    }
+
+    private static boolean isSet(String value) {
+        return value != null && !value.isBlank();
+    }
 }

@@ -15,10 +15,10 @@ public class StorageProperties {
 
     /**
      * Bound as a String rather than the enum so that a blank value — an env var
-     * that exists but was never filled in — falls back to the default instead of
-     * leaving the application with no storage implementation at all.
+     * that exists but was never filled in — is treated as "not chosen" instead
+     * of leaving the application with no storage implementation at all.
      */
-    private String provider = StorageProvider.LOCAL.name();
+    private String provider = "";
 
     private final CloudinaryProperties cloudinary = new CloudinaryProperties();
 
@@ -26,7 +26,10 @@ public class StorageProperties {
         String value = provider == null ? "" : provider.trim();
 
         if (value.isEmpty()) {
-            return StorageProvider.LOCAL;
+            // No explicit choice. Supplying the Cloudinary credentials is itself
+            // the signal to use it, so a deploy that has them does not silently
+            // fall back to disk just because a separate flag was missed.
+            return cloudinary.isConfigured() ? StorageProvider.CLOUDINARY : StorageProvider.LOCAL;
         }
 
         try {
