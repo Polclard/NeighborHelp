@@ -3,7 +3,6 @@ package com.neighborhelp.service.impl;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.springframework.mock.web.MockMultipartFile;
-import org.springframework.test.util.ReflectionTestUtils;
 
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -20,8 +19,7 @@ class LocalFileStorageServiceTest {
 
     @Test
     void storedFilesCanBeDeletedByPublicPath() throws Exception {
-        LocalFileStorageService storageService = new LocalFileStorageService();
-        ReflectionTestUtils.setField(storageService, "uploadDir", tempDir.toString());
+        LocalFileStorageService storageService = new LocalFileStorageService(tempDir.toString());
 
         String storedPath = storageService.storeProfileAvatar(
                 UUID.randomUUID(),
@@ -43,8 +41,7 @@ class LocalFileStorageServiceTest {
 
     @Test
     void invalidDeletionPathIsRejected() {
-        LocalFileStorageService storageService = new LocalFileStorageService();
-        ReflectionTestUtils.setField(storageService, "uploadDir", tempDir.toString());
+        LocalFileStorageService storageService = new LocalFileStorageService(tempDir.toString());
 
         assertThatThrownBy(() -> storageService.deleteStoredFile("/uploads/../../etc/passwd"))
                 .isInstanceOf(IllegalArgumentException.class)

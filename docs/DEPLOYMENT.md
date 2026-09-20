@@ -160,10 +160,21 @@ bounded number of transformations no matter how much traffic the images get.
 
 ### Switching providers
 
-The two providers are mutually exclusive and are chosen at startup by
-`@ConditionalOnProperty`. Switching does not rewrite existing rows: values
-already stored under one provider will not resolve under the other. There is no
-backfill, so switch before the app has uploads worth keeping.
+The provider is resolved once at startup and exactly one implementation is
+created. Matching is case-insensitive, and an unset or blank
+`APP_STORAGE_PROVIDER` falls back to `local` rather than leaving the
+application with no storage implementation.
+
+Two misconfigurations fail fast at startup with a message naming the fix:
+
+- an unrecognised provider — `Unknown app.storage.provider 's3'. Expected one
+  of: local, cloudinary`
+- `cloudinary` selected with a credential missing — `CLOUDINARY_CLOUD_NAME must
+  be set when app.storage.provider=cloudinary`
+
+Switching does not rewrite existing rows: values already stored under one
+provider will not resolve under the other. There is no backfill, so switch
+before the app has uploads worth keeping.
 
 ---
 
