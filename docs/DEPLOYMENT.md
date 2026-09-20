@@ -37,7 +37,8 @@ on first boot by Flyway.
 | `JWT_SECRET` | 32+ random characters | Generate with `openssl rand -base64 48` |
 | `APP_CORS_ALLOWED_ORIGINS` | `https://your-app.vercel.app` | Exact origin, no trailing slash |
 | `APP_WEBSOCKET_ALLOWED_ORIGINS` | `https://your-app.vercel.app` | Same value |
-| `CLOUDINARY_CLOUD_NAME` | your cloud name | Setting all three selects Cloudinary automatically |
+| `CLOUDINARY_URL` | `cloudinary://key:secret@cloud` | The one value from the Cloudinary dashboard; selects Cloudinary automatically |
+| `CLOUDINARY_CLOUD_NAME` | your cloud name | Alternative to `CLOUDINARY_URL`; set all three |
 | `CLOUDINARY_API_KEY` | your API key | |
 | `CLOUDINARY_API_SECRET` | your API secret | |
 | `APP_STORAGE_PROVIDER` | *(leave unset)* | Only to force `local` or `cloudinary`; see [Image storage](#image-storage) |
@@ -130,8 +131,15 @@ Use `cloudinary` in production unless you have a real persistent volume.
 ### Setting up Cloudinary
 
 1. Create a free account at <https://cloudinary.com/users/register_free>.
-2. Copy **Cloud Name**, **API Key** and **API Secret** from the dashboard.
-3. Set them on the backend host:
+2. Copy the **API environment variable** from the dashboard — one line of the
+   form `CLOUDINARY_URL=cloudinary://<api_key>:<api_secret>@<cloud_name>`.
+3. Set it on the backend host:
+
+   ```
+   CLOUDINARY_URL=cloudinary://123456789012345:your-api-secret@your-cloud-name
+   ```
+
+   Or, if you prefer the three values separately:
 
    ```
    CLOUDINARY_CLOUD_NAME=your-cloud-name
@@ -139,12 +147,21 @@ Use `cloudinary` in production unless you have a real persistent volume.
    CLOUDINARY_API_SECRET=your-api-secret
    ```
 
-   That is all. `APP_STORAGE_PROVIDER` does not need to be set: when all three
+   That is all. `APP_STORAGE_PROVIDER` does not need to be set: when the
    credentials are present Cloudinary is selected automatically.
 
    The secret is server-side only — the browser never sees it, because uploads
    go through the existing authenticated endpoints rather than direct from the
    client.
+
+> **Put the URL in `CLOUDINARY_URL`, not in `APP_STORAGE_PROVIDER`.** The
+> dashboard offers the credential as a ready-to-paste `NAME=value` line, and a
+> host's "add environment variable" form wants the two halves in separate
+> boxes. Pasting the whole line into the value of `APP_STORAGE_PROVIDER` makes
+> the credential the provider name, and the application refuses to start with
+> `Unknown app.storage.provider`. If that has already happened, fix the variable
+> **and rotate the API secret** in the Cloudinary console: the failed startup
+> wrote it to the deploy log.
 
 `CLOUDINARY_FOLDER` (default `neighborhelp`) prefixes every stored asset, so one
 Cloudinary account can host several environments without them colliding.

@@ -39,8 +39,8 @@ public class StorageConfig {
                 // Say so loudly: this is the configuration that quietly loses
                 // every upload on the next redeploy.
                 log.warn("Image storage: local disk at '{}'. Uploads do NOT survive a redeploy unless this is a "
-                        + "persistent volume. Set CLOUDINARY_CLOUD_NAME / CLOUDINARY_API_KEY / CLOUDINARY_API_SECRET "
-                        + "to store images in Cloudinary instead.", uploadDir);
+                        + "persistent volume. Set CLOUDINARY_URL (or CLOUDINARY_CLOUD_NAME / CLOUDINARY_API_KEY / "
+                        + "CLOUDINARY_API_SECRET) to store images in Cloudinary instead.", uploadDir);
                 yield new LocalFileStorageService(uploadDir);
             }
             case CLOUDINARY -> {
@@ -52,6 +52,13 @@ public class StorageConfig {
     }
 
     private Cloudinary cloudinary(CloudinaryProperties properties) {
+        if (properties.hasUnparsableUrl()) {
+            throw new IllegalStateException(
+                    "CLOUDINARY_URL is set but is not a Cloudinary URL. Expected "
+                            + "cloudinary://<api_key>:<api_secret>@<cloud_name>, or set CLOUDINARY_CLOUD_NAME / "
+                            + "CLOUDINARY_API_KEY / CLOUDINARY_API_SECRET instead.");
+        }
+
         Cloudinary cloudinary = new Cloudinary(Map.of(
                 "cloud_name", required(properties.getCloudName(), "CLOUDINARY_CLOUD_NAME"),
                 "api_key", required(properties.getApiKey(), "CLOUDINARY_API_KEY"),
@@ -67,7 +74,8 @@ public class StorageConfig {
     private String required(String value, String environmentVariable) {
         if (value == null || value.isBlank()) {
             throw new IllegalStateException(
-                    "%s must be set when app.storage.provider=cloudinary".formatted(environmentVariable));
+                    ("%s must be set when app.storage.provider=cloudinary (or set CLOUDINARY_URL, which carries all "
+                            + "three values)").formatted(environmentVariable));
         }
 
         return value;

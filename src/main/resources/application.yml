@@ -36,6 +36,9 @@ app:
     # otherwise local. Set it explicitly to override that.
     provider: ${APP_STORAGE_PROVIDER:}
     cloudinary:
+      # Either the single URL from the Cloudinary dashboard, or the three
+      # discrete values below. The discrete values win where both are given.
+      url: ${CLOUDINARY_URL:}
       cloud-name: ${CLOUDINARY_CLOUD_NAME:}
       api-key: ${CLOUDINARY_API_KEY:}
       api-secret: ${CLOUDINARY_API_SECRET:}
