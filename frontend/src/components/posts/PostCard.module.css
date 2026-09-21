@@ -55,6 +55,8 @@
 .description {
   color: var(--ink-soft);
   line-height: 1.6;
+  white-space: pre-line;
+  text-align: justify;
   display: -webkit-box;
   -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;

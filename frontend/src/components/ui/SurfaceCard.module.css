@@ -30,8 +30,6 @@
 .title,
 .description {
     margin: 0;
-    white-space: pre-line;
-    text-align: justify;
 }
 
 .title {
@@ -43,6 +41,8 @@
     color: var(--ink-soft);
     line-height: 1.6;
     max-width: 48rem;
+    white-space: pre-line;
+    text-align: justify;
 }
 
 .actions {

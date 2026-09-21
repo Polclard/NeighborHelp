@@ -5,7 +5,9 @@ import PostFilters from '../components/posts/PostFilters.jsx'
 import PostMap from '../components/posts/PostMap.jsx'
 import EmptyState from '../components/ui/EmptyState.jsx'
 import SpotlightSearch from '../components/ui/SpotlightSearch.jsx'
+import {focusCardDescriptionLength} from '../constants/posts.js'
 import {calculateDistanceKm} from '../utils/calculateDistanceKm.js'
+import {truncateText} from '../utils/truncateText.js'
 import {fetchDirectionsRoute} from '../utils/fetchDirectionsRoute.js'
 import {useBrowserLocation} from '../hooks/useBrowserLocation.js'
 import {useAppDispatch} from '../hooks/useAppDispatch.js'
@@ -365,7 +367,8 @@ function MapPage() {
                         <section className={styles.focusCard}>
                             <p className={styles.sectionLabel}>{t('map.focusedPin')}</p>
                             <h2>{selectedPost.title}</h2>
-                            <p>{selectedPost.description}</p>
+                            <p className={styles.description}>{truncateText(selectedPost.description, focusCardDescriptionLength)}</p>
+                            <hr style={{width: '100%'}}/>
                             <div className={styles.focusMeta}>
                                 <span>{selectedOwner ? `${selectedOwner.firstName} ${selectedOwner.lastName}` : t('common.neighbor')}</span>
                                 {markerDetails[selectedPost.id]?.distanceKm !== null ? (

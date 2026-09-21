@@ -13,10 +13,11 @@ import {
     ZoomControl
 } from 'react-leaflet'
 import {defaultMapCenter, mapTileSources} from '../../constants/map.js'
-import {formatPostStatus, formatPostType} from '../../constants/posts.js'
+import {formatPostStatus, formatPostType, mapPreviewDescriptionLength} from '../../constants/posts.js'
 import {useI18n} from '../../i18n/useI18n.js'
 import OpenFreeMapScene from './OpenFreeMapScene.jsx'
 import styles from './PostMap.module.css'
+import {truncateText} from '../../utils/truncateText.js'
 
 function PostMap({
                      markers = [],
@@ -294,7 +295,7 @@ function MarkerInfoCard({detail, marker}) {
             </div>
 
             <h3>{marker.title}</h3>
-            <p>{detail.description.length < 100 ? detail.description : detail.description.slice(0, 100) + "..." || marker.category}</p>
+            <p className={styles.infoDescription}>{truncateText(detail?.description, mapPreviewDescriptionLength) || marker.category}</p>
 
             <div className={styles.infoOwner}>
         <span className={styles.infoAvatar} style={avatarStyle}>

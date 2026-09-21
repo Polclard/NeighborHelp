@@ -39,6 +39,8 @@
 .comment {
   color: var(--ink-soft);
   line-height: 1.7;
+  white-space: pre-line;
+  text-align: justify;
 }
 
 .reportBlock {

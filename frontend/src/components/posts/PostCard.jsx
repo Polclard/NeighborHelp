@@ -45,7 +45,7 @@ function PostCard({ post, ownerProfile = null, distanceKm = null, isSelected = f
       </div>
 
       <h3 className={styles.title}>{post.title}</h3>
-      <p className={styles.description}>{post.description}</p>
+      <p className={styles.description}>{post.description || ''}</p>
 
       <dl className={styles.meta}>
         <div>

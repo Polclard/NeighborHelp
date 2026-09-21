@@ -198,6 +198,11 @@
     text-decoration: none;
 }
 
+.description {
+    white-space: pre-line;
+    text-align: justify;
+}
+
 .primaryAction {
     background: linear-gradient(135deg, var(--accent), #f0b970);
     color: #fffaf0;

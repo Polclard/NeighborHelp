@@ -213,6 +213,11 @@
     line-height: 1.5;
 }
 
+.infoDescription {
+    white-space: pre-line;
+    text-align: justify;
+}
+
 .infoBadges {
     display: flex;
     flex-wrap: wrap;

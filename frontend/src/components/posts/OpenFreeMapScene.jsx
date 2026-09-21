@@ -2,9 +2,10 @@ import {useEffect, useMemo, useRef, useState} from 'react'
 import maplibregl from 'maplibre-gl'
 import 'maplibre-gl/dist/maplibre-gl.css'
 import {defaultMapCenter, openFreeMapStyleUrl, openFreeMapThreeDView} from '../../constants/map.js'
-import {formatPostStatus, formatPostType} from '../../constants/posts.js'
+import {formatPostStatus, formatPostType, mapPreviewDescriptionLength} from '../../constants/posts.js'
 import {useI18n} from '../../i18n/useI18n.js'
 import styles from './PostMap.module.css'
+import {truncateText} from '../../utils/truncateText.js'
 
 const POST_SOURCE_ID = 'post-markers'
 const POST_LAYER_ID = 'post-markers-layer'
@@ -79,7 +80,7 @@ function OpenFreeMapScene({
                     id: marker.id,
                     properties: {
                         category: marker.category || '',
-                        detailText: detail.description.length < 100 ? detail.description : detail.description.slice(0, 100) + "..." || marker.category || '',
+                        detailText: truncateText(detail?.description, mapPreviewDescriptionLength) || marker.category || '',
                         id: marker.id,
                         metaText,
                         ownerAvatar: detail?.ownerAvatar || '',
@@ -399,7 +400,8 @@ function buildPopupContent(properties, actionLabel) {
     title.textContent = properties.title
 
     const description = document.createElement('p')
-    description.textContent = properties.detailText || properties.category
+    description.className = styles.infoDescription
+    description.textContent = properties.detailText || properties.category || ''
 
     const owner = document.createElement('div')
     owner.className = styles.infoOwner

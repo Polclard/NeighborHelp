@@ -30,6 +30,12 @@ const translationKeys = {
 
 export const reviewRatingOptions = [1, 2, 3, 4, 5]
 
+// Characters of a post description shown in map popups before the ellipsis.
+export const mapPreviewDescriptionLength = 100
+
+// Characters of a post description shown in the map sidebar focus card.
+export const focusCardDescriptionLength = 200
+
 function translateValue(value, t) {
   const translationKey = translationKeys[value]
 
