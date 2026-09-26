@@ -222,6 +222,112 @@ before the app has uploads worth keeping.
 
 ---
 
+## Moving the database to Neon
+
+Render's free Postgres expires 30 days after it is created. Neon's free tier
+does not expire, so it is the better long-term home. The application needs no
+code changes: only the three database variables on the backend change.
+
+### 1. Create the Neon project
+
+1. Sign up at <https://neon.tech> and create a project.
+2. **Postgres version:** choose the same major version as the Render database
+   (shown on the Render database's *Info* page), or a newer one.
+3. **Region:** choose the one nearest the backend host (for example, AWS
+   Frankfurt `eu-central-1` for a Render service in Frankfurt). Every query
+   crosses this link.
+4. On the project dashboard, open **Connect**, **turn "Connection pooling"
+   off**, and copy the connection string. It looks like:
+
+   ```
+   postgresql://neondb_owner:PASSWORD@ep-xxx-123456.eu-central-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require
+   ```
+
+   Use the **direct** host (no `-pooler` in the name) both for the import and
+   for the app. The app already pools connections through Hikari. Flyway also
+   takes a session-level lock that PgBouncer's transaction mode does not
+   support.
+
+### 2. Copy the data from Render
+
+Do this **before** pointing the backend at Neon. If the app boots against the
+empty Neon database first, Flyway creates the tables and the restore conflicts
+with them.
+
+Take the **External Database URL** from the Render database's *Connect* menu.
+Both commands run the Postgres tools in Docker, so nothing has to be installed
+locally. Replace `16` with the Render database's major version.
+
+```bash
+# Dump from Render into ./neighborhelp.dump
+docker run --rm -v "$PWD:/backup" postgres:16-alpine \
+  pg_dump "RENDER_EXTERNAL_DATABASE_URL" \
+  --format=custom --no-owner --no-privileges --file=/backup/neighborhelp.dump
+
+# Restore into Neon (direct connection string from step 1)
+docker run --rm -v "$PWD:/backup" postgres:16-alpine \
+  pg_restore --dbname="NEON_CONNECTION_STRING" \
+  --no-owner --no-privileges /backup/neighborhelp.dump
+```
+
+`--no-owner --no-privileges` are needed because the Render role
+(`neighborhelp_user` or similar) does not exist on Neon. All objects end up
+owned by `neondb_owner`. The dump includes `flyway_schema_history`, so Flyway
+sees every migration as already applied and does not run them again.
+
+To start over after a failed restore, reset the Neon database and run the
+restore again:
+
+```bash
+docker run --rm postgres:16-alpine psql "NEON_CONNECTION_STRING" \
+  -c "DROP SCHEMA public CASCADE; CREATE SCHEMA public;"
+```
+
+Check that the row counts match on both sides:
+
+```bash
+for url in "RENDER_EXTERNAL_DATABASE_URL" "NEON_CONNECTION_STRING"; do
+  docker run --rm postgres:16-alpine psql "$url" -At -c \
+    "SELECT (SELECT count(*) FROM users) AS users,
+            (SELECT count(*) FROM service_posts) AS posts,
+            (SELECT count(*) FROM messages) AS messages,
+            (SELECT max(version) FROM flyway_schema_history) AS flyway;"
+done
+```
+
+The dump holds password hashes and refresh tokens. Delete `neighborhelp.dump`
+once the migration is done, and never commit it.
+
+### 3. Point the backend at Neon
+
+Split the Neon connection string into the three variables Spring reads. Put
+`jdbc:` in front, remove the user and password, and drop
+`channel_binding=require`:
+
+| Variable | Value |
+| --- | --- |
+| `DATABASE_URL` | `jdbc:postgresql://ep-xxx-123456.eu-central-1.aws.neon.tech/neondb?sslmode=require` |
+| `DB_USERNAME` | `neondb_owner` |
+| `DB_PASSWORD` | the password from the connection string |
+
+Save the variables and let the backend redeploy. The startup log should show
+Flyway reporting `Schema "public" is up to date. No migration necessary.` Log in
+with an existing account to confirm the old data is there. After that, the
+Render database can be deleted.
+
+### Things to know about Neon's free tier
+
+- **The compute suspends after ~5 minutes idle.** The first query after that
+  wakes it, which takes roughly half a second. Hikari discards the dead
+  connections and opens new ones on its own. Do not add a keep-alive ping: an
+  always-on compute uses up the free monthly compute hours.
+- **0.5 GB storage per project.** Images are stored in Cloudinary, so the
+  database only holds rows and this is plenty for now.
+- Point-in-time restore on the free tier covers only a short window. For real
+  backups, run the `pg_dump` command above against Neon now and then.
+
+---
+
 ## What is deliberately not solved here
 
 - **Chat message images are not uploaded.** `SendMessageRequest.imageUrl` takes
